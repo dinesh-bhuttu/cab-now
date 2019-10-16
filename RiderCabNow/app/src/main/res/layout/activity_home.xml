@@ -4,6 +4,9 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
+    <include layout="@layout/toolbar"
+        android:id="@+id/toolbar"/>
+
     <fragment
         android:id="@+id/mapNearBy"
         android:name="com.google.android.gms.maps.SupportMapFragment"
@@ -27,7 +30,7 @@
 
     <Button
         android:id="@+id/btnGetDirection"
-        android:text="Get Direction"
+        android:text="CHOOSE RIDE"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="#1B1A1A"

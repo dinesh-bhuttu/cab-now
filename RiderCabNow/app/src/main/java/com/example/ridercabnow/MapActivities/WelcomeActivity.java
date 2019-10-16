@@ -3,10 +3,14 @@ package com.example.ridercabnow.MapActivities;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -35,6 +39,7 @@ import com.google.android.libraries.places.api.model.Place;
 import com.google.android.libraries.places.api.net.PlacesClient;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.util.Arrays;
 
@@ -75,6 +80,10 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         setContentView(R.layout.activity_home);
 
         Log.d(TAG, "onCreate: Started");
+
+        // Get toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
 
         // Get current location and move camera to it
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -185,5 +194,40 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         if (currentPolyline != null)
             currentPolyline.remove();
         currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_options_rider, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.menuProfile:
+                // TODO intent to profile activity
+                Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            case R.id.menuHistory:
+                // TODO show history activity out of app
+                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            case R.id.menuLogout:
+                // TODO 1) logout out of the app
+                // TODO 2) delete stored shared pref variables for new login info
+                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }

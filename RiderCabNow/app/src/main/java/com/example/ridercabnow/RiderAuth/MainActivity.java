@@ -3,6 +3,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -28,17 +29,26 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.Map;
+
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
+
+    private static final String TAG = "MainActivity";
     Button btnSignin, btnRegister;
     RelativeLayout rootLayout;
     FirebaseAuth auth;
     FirebaseDatabase db;
     DatabaseReference users;
     DatabaseReference drivers;
+
+    // shared pref variables
+    String riderEmail = "", riderPassword = "";
+
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
@@ -47,11 +57,13 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         // Before setContentView
         CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
                 .setDefaultFontPath("fonts/arkhip_font.ttf")
                 .setFontAttrId(R.attr.fontPath)
                 .build());
+
         setContentView(R.layout.activity_main);
 
         // Init firebase
@@ -59,6 +71,7 @@ public class MainActivity extends AppCompatActivity {
         db = FirebaseDatabase.getInstance();
         users = db.getReference("Users");
         drivers = db.getReference("Drivers");
+
         //Init view
         btnRegister = findViewById(R.id.btnRegister);
         btnSignin = findViewById(R.id.btnSignin);
@@ -70,12 +83,20 @@ public class MainActivity extends AppCompatActivity {
                 showRegisterDialog();
             }
         });
+
         btnSignin.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showLoginDialog();
             }
         });
+
+        // get SharedPreference credentials into riderEmail and pass global variables
+        getSharedPrefVars();
+        if(doCredsExist()) {
+            Log.d(TAG, "onCreate: " + riderEmail + " " + riderPassword);
+            btnSignin.performClick();
+        }
 
     }
 
@@ -239,6 +260,11 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess(AuthResult authResult) {
                                             waitingDialog.dismiss();
+
+                                            // Write shared prefs on successful login
+                                            writeSharedPrefs(edtEmail.getText().toString(),
+                                                    edtPassword.getText().toString());
+
                                             startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
                                             finish();
                                         }
@@ -271,5 +297,34 @@ public class MainActivity extends AppCompatActivity {
         });
 
         dialog.show();
+
+        // check for global variables
+        if(doCredsExist()) {
+            edtEmail.setText(riderEmail);
+            edtPassword.setText(riderPassword);
+        }
     }
+
+
+    private void writeSharedPrefs(String email, String password) {
+        Log.d(TAG, "addToSharedPref: " + email + " " + password);
+        SharedPreferences prefs = getSharedPreferences("AuthPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("email", email);
+        editor.putString("password", password);
+        editor.apply();
+    }
+
+    private void getSharedPrefVars() {
+        riderEmail = getSharedPreferences("AuthPrefs", MODE_PRIVATE)
+                .getString("email", "");
+        riderPassword = getSharedPreferences("AuthPrefs", MODE_PRIVATE)
+                .getString("password", "");
+        Log.d(TAG, "Shared pref variables : " + riderEmail + " " + riderPassword);
+    }
+
+    private boolean doCredsExist() {
+        return !riderEmail.equals("") && !riderPassword.equals("");
+    }
+
 }
