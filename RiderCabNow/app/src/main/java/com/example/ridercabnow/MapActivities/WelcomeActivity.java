@@ -5,6 +5,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,6 +17,7 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
+import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.utils.Constants;
 import com.google.android.gms.common.api.Status;
@@ -210,7 +212,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
             case R.id.menuProfile:
                 // TODO intent to profile activity
                 Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
-
+                startActivity(new Intent(this , ProfileActivity.class));
                 return true;
 
             case R.id.menuHistory:
