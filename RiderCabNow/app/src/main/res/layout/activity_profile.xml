@@ -15,8 +15,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Full name"
-        android:layout_marginTop="50dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginTop="40dp"
+        android:layout_marginStart="20dp"
         android:textSize="18sp"/>
 
     <TextView
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:text="Name goes here"
         android:layout_marginTop="10dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:textSize="24sp"/>
 
 
@@ -35,7 +35,7 @@
         android:layout_height="wrap_content"
         android:text="Phone number"
         android:layout_marginTop="50dp"
-        android:layout_marginLeft="20dp"
+        android:layout_marginStart="20dp"
         android:textSize="18sp"/>
 
     <TextView
@@ -65,24 +65,29 @@
         android:layout_marginLeft="20dp"
         android:textSize="24sp"/>
 
-    <TextView
-        android:id="@+id/tvPassword"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Password"
-        android:layout_marginTop="30dp"
-        android:layout_marginLeft="20dp"
-        android:textSize="18sp"/>
 
-    <TextView
-        android:id="@+id/tvRiderPassword"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Password goes here"
-        android:inputType="numberPassword"
-        android:layout_marginTop="10dp"
-        android:layout_marginLeft="20dp"
-        android:textSize="24sp"/>
+        android:orientation="horizontal"
+        android:layout_marginTop="80dp"
+        android:layout_marginStart="20dp">
 
+        <TextView
+            android:id="@+id/tvRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Rating"
+            android:layout_marginTop="6dp"
+            android:textSize="26sp"/>
+
+        <RatingBar
+            android:id="@+id/ratingRider"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:rating="0.0"
+            android:layout_marginStart="20dp"/>
+
+    </LinearLayout>
 
 </LinearLayout>
