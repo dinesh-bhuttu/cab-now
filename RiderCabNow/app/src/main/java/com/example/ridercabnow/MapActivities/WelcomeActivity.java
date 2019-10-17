@@ -6,6 +6,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.ColorSpace;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,7 +56,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
     private Polyline currentPolyline;
 
     // Places
-    private static final String TAG = "MainActivity";
+    private static final String TAG = "WelcomeActivity";
     private final String API_KEY = Constants.GOOGLE_MAPS_API_KEY;
     private PlacesClient placesClient;
 
@@ -101,6 +103,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         assert autocompleteSupportFragment != null;
         autocompleteSupportFragment.setPlaceFields(Arrays.asList(Place.Field.ID,
                 Place.Field.NAME,Place.Field.LAT_LNG));
+
         autocompleteSupportFragment.setOnPlaceSelectedListener(new PlaceSelectionListener() {
             @Override
             public void onPlaceSelected(@NonNull Place place) {
@@ -122,16 +125,18 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                             .title("Current Location");
                     mMap.addMarker(place1);
 
+                    getDirection.setBackgroundColor(Color.BLACK);
+
                     // Get directions
-                    getDirection = findViewById(R.id.btnGetDirection);
-                    getDirection.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View view) {
-                            new FetchURL(WelcomeActivity.this)
-                                    .execute(getUrl(place1.getPosition(),
-                                            place2.getPosition(), "driving"), "driving");
-                        }
-                    });
+//                    getDirection.setOnClickListener(new View.OnClickListener() {
+//
+//                        @Override
+//                        public void onClick(View view) {
+//                            new FetchURL(WelcomeActivity.this)
+//                                    .execute(getUrl(place1.getPosition(),
+//                                            place2.getPosition(), "driving"), "driving");
+//                        }
+//                    });
                 }
             }
 
@@ -141,6 +146,30 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
             }
         });
 
+        getDirection = findViewById(R.id.btnGetDirection);
+        getDirection.setOnClickListener(view -> {
+            if(place2 == null) {
+                Toast.makeText(this, "Choose your destination", Toast.LENGTH_LONG).show();
+            }
+            else {
+                Log.d(TAG, "onCreate: " + place1.getPosition() + place2.getPosition());
+
+                String[] p1 = new String[] {
+                        String.valueOf(place1.getPosition().latitude),
+                        String.valueOf(place1.getPosition().longitude)
+                };
+
+                String[] p2 = new String[] {
+                        String.valueOf(place2.getPosition().latitude),
+                        String.valueOf(place2.getPosition().longitude)
+                };
+
+                Intent i = new Intent(this, ChooseRideActivity.class);
+                i.putExtra("place1", p1);
+                i.putExtra("place2", p2);
+                startActivity(i);
+            }
+        });
 
     }
 
@@ -210,7 +239,6 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         switch (item.getItemId())
         {
             case R.id.menuProfile:
-                // TODO intent to profile activity
                 Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this , ProfileActivity.class));
                 return true;
@@ -223,7 +251,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
 
             case R.id.menuLogout:
                 // TODO 1) logout out of the app
-                // TODO 2) delete stored shared pref variables for new login info
+                // TODO 2) [optional] delete stored shared pref variables for new login info
                 Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
 
                 return true;

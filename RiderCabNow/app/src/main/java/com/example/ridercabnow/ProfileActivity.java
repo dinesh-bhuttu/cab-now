@@ -62,7 +62,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         // init widgets
         initViews();
 
-        // TODO get info from firebase db into User class and fill the TextViews
+        // Get info from firebase db into User class and fill the TextViews
         databaseReference.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
