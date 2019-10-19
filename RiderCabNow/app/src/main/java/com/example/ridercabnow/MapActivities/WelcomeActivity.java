@@ -128,15 +128,12 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                     getDirection.setBackgroundColor(Color.BLACK);
 
                     // Get directions
-//                    getDirection.setOnClickListener(new View.OnClickListener() {
-//
-//                        @Override
-//                        public void onClick(View view) {
-//                            new FetchURL(WelcomeActivity.this)
-//                                    .execute(getUrl(place1.getPosition(),
-//                                            place2.getPosition(), "driving"), "driving");
-//                        }
-//                    });
+                    new FetchURL(WelcomeActivity.this)
+                            .execute(getUrl(place1.getPosition(),
+                                    place2.getPosition(),
+                                    "driving"),
+                                    "driving");
+
                 }
             }
 
@@ -152,6 +149,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                 Toast.makeText(this, "Choose your destination", Toast.LENGTH_LONG).show();
             }
             else {
+
                 Log.d(TAG, "onCreate: " + place1.getPosition() + place2.getPosition());
 
                 String[] p1 = new String[] {
@@ -204,7 +202,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         placesClient = Places.createClient(this);
     }
 
-    private String getUrl(LatLng origin, LatLng dest, String directionMode) {
+    public String getUrl(LatLng origin, LatLng dest, String directionMode) {
         // Origin of route
         String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
         // Destination of route
@@ -224,7 +222,10 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
     public void onTaskDone(Object... values) {
         if (currentPolyline != null)
             currentPolyline.remove();
-        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+
+        // save this polyline for next activity
+        Constants.savedPolylineOptions = (PolylineOptions) values[0];
+        currentPolyline = mMap.addPolyline(Constants.savedPolylineOptions);
     }
 
     @Override

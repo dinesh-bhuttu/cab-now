@@ -55,7 +55,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         toolbar.setNavigationOnClickListener(v -> {
             // back button pressed
             Log.d(TAG, "onCreate: " + "Back pressed");
-            startActivity(new Intent(this, WelcomeActivity.class));
             finish();
         });
 

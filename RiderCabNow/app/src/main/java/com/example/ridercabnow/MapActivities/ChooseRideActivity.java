@@ -1,20 +1,94 @@
 package com.example.ridercabnow.MapActivities;
 
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.content.Intent;
+import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
+import com.example.ridercabnow.directionhelpers.FetchURL;
+import com.example.ridercabnow.directionhelpers.TaskLoadedCallback;
+import com.example.ridercabnow.utils.Constants;
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
+import com.google.android.gms.maps.model.Polyline;
+import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.Task;
 
-public class ChooseRideActivity extends AppCompatActivity {
+
+public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
     private static final String TAG = "ChooseRideActivity";
-    MarkerOptions place1, place2;
+    private MarkerOptions place1, place2;
+
+    // Directions
+    private GoogleMap mMap;
+    Button getDirection;
+    private Polyline currentPolyline;
+
+    // Places
+    private final String API_KEY = Constants.GOOGLE_MAPS_API_KEY;
+
+    // Location
+    private FusedLocationProviderClient mFusedLocationClient;
+    private Location currentLocation;
+    private static final float DEFAULT_ZOOM = 16f;
+
+    @Override
+    public void onMapReady(GoogleMap googleMap) {
+        Log.d(TAG, "onMapReady: Map is ready " + googleMap.toString());
+
+        mMap = googleMap;
+
+        // 2 markers and saved polyline from previous activity
+        mMap.addMarker(place1);
+        mMap.addMarker(place2);
+        if(Constants.savedPolylineOptions != null) {
+            Log.d(TAG, "onMapReady: drawing saved polyline" + Constants.savedPolylineOptions);
+            mMap.addPolyline(Constants.savedPolylineOptions);
+        }
+        else {
+            drawPolyLine();
+        }
+        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place1.getPosition(), DEFAULT_ZOOM));
+
+        mMap.setMyLocationEnabled(true);
+
+    }
+
+    private void drawPolyLine() {
+        // Get directions
+        new FetchURL(ChooseRideActivity.this)
+                .execute(getUrl(place1.getPosition(),
+                        place2.getPosition(),
+                        "driving"),
+                        "driving");
+    }
+
+    @Override
+    public void onTaskDone(Object... values) {
+        if (currentPolyline != null)
+            currentPolyline.remove();
+        currentPolyline = mMap.addPolyline((PolylineOptions) values[0]);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -25,7 +99,7 @@ public class ChooseRideActivity extends AppCompatActivity {
         getIntentInfo();
 
         // UI
-        // TODO (1) Create slidingPanel for UI [Ride selection]
+        // TODO DONE (1) Create slidingPanel for UI [Ride selection]
         // TODO (2) Create custom list layout for slidingPanel ride selection
         //          Custom list should have
         //          -> Ride name
@@ -33,8 +107,8 @@ public class ChooseRideActivity extends AppCompatActivity {
         //          -> Ride price estimate [implement pricing policy crap]
 
         // Pre work
-        // TODO (3) init onMapReady, FusedLocationProviderClient and draw marker options
-        // TODO (4) Integrate directions API from previous activity to draw PolyLine
+        // TODO DONE (3) init onMapReady, FusedLocationProviderClient and draw marker options
+        // TODO DONE (4) Integrate directions API draw PolyLine from place1 to place2
 
         // Requirement
         // TODO (5) onClick of any ride picture from slidingPanel
@@ -47,6 +121,42 @@ public class ChooseRideActivity extends AppCompatActivity {
         // Post ride completion
         // TODO (7) Integrate payment and all that crap...
 
+        // Get toolbar
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Directions");
+        setSupportActionBar(toolbar);
+
+        // init map
+        mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+        getLastLocation();
+
+        // umano slidingView
+        ListView listView = findViewById(R.id.listView);
+         listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
+                 new String[]{"Auto", "Micro", "Sedan"}));
+
+
+    }
+
+    private void getLastLocation() {
+        Task<Location> task = mFusedLocationClient.getLastLocation();
+        task.addOnSuccessListener(location -> {
+            if(location != null)
+            {
+                // Get Map fragment here
+                SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                        .findFragmentById(R.id.mapNearBy);
+
+                if (mapFragment != null) {
+                    mapFragment.getMapAsync(ChooseRideActivity.this);
+
+                }
+            }
+            else
+            {
+                Toast.makeText(ChooseRideActivity.this, "Location not found", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void getIntentInfo() {
@@ -62,5 +172,56 @@ public class ChooseRideActivity extends AppCompatActivity {
 
         Log.d(TAG, "getIntentInfo: " + l1 + " " + l2);
     }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater menuInflater = getMenuInflater();
+        menuInflater.inflate(R.menu.menu_options_rider, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId())
+        {
+            case R.id.menuProfile:
+                Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this , ProfileActivity.class));
+                return true;
+
+            case R.id.menuHistory:
+                // TODO show history activity out of app
+                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            case R.id.menuLogout:
+                // TODO 1) logout out of the app
+                // TODO 2) [optional] delete stored shared pref variables for new login info
+                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
+
+                return true;
+
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public String getUrl(LatLng origin, LatLng dest, String directionMode) {
+        // Origin of route
+        String str_origin = "origin=" + origin.latitude + "," + origin.longitude;
+        // Destination of route
+        String str_dest = "destination=" + dest.latitude + "," + dest.longitude;
+        // Mode
+        String mode = "mode=" + directionMode;
+        // Building the parameters to the web service
+        String parameters = str_origin + "&" + str_dest + "&" + mode;
+        // Output format
+        String output = "json";
+        // Building the url to the web service
+        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + Constants.GOOGLE_MAPS_API_KEY;
+        return url;
+    }
+
 
 }
