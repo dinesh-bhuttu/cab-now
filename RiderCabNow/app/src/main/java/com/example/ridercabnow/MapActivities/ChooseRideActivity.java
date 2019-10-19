@@ -11,6 +11,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
@@ -98,8 +100,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // Gets source and dest MarkerOptions from previous activity
         getIntentInfo();
 
+
+        // PERMISSIONS
+        // TODO (1) Take location and storage permission in login activity
+        // TODO (2) Change Rating bar in profile to be READONLY !
+
         // UI
-        // TODO DONE (1) Create slidingPanel for UI [Ride selection]
+        // DONE (1) Create slidingPanel for UI [Ride selection]
         // TODO (2) Create custom list layout for slidingPanel ride selection
         //          Custom list should have
         //          -> Ride name
@@ -107,8 +114,8 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         //          -> Ride price estimate [implement pricing policy crap]
 
         // Pre work
-        // TODO DONE (3) init onMapReady, FusedLocationProviderClient and draw marker options
-        // TODO DONE (4) Integrate directions API draw PolyLine from place1 to place2
+        // DONE (3) init onMapReady, FusedLocationProviderClient and draw marker options
+        // DONE (4) Integrate directions API draw PolyLine from place1 to place2
 
         // Requirement
         // TODO (5) onClick of any ride picture from slidingPanel
@@ -125,6 +132,16 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         Toolbar toolbar = findViewById(R.id.toolbar);
         toolbar.setTitle("Directions");
         setSupportActionBar(toolbar);
+        if(getSupportActionBar() != null) {
+            Log.d(TAG, "onCreate: " + "Not null");
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+        toolbar.setNavigationOnClickListener(v -> {
+            // back button pressed
+            Log.d(TAG, "onCreate: " + "Back pressed");
+            finish();
+        });
 
         // init map
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -134,6 +151,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         ListView listView = findViewById(R.id.listView);
          listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
                  new String[]{"Auto", "Micro", "Sedan"}));
+
+         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+             @Override
+             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+
+             }
+         });
 
 
     }
