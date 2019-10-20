@@ -1,21 +1,17 @@
 package com.example.ridercabnow.MapActivities;
 
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -39,11 +35,8 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 
 
 public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
@@ -72,6 +65,10 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     FirebaseAuth firebaseAuth;
     FirebaseDatabase firebaseDatabase;
     DatabaseReference databaseReference;
+
+    // Payment method obtained from PaymentDialog in WelcomeActivity
+    // If not set for some reason, Default is UPI
+    public static String payment = "UPI";
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -123,6 +120,9 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // PERMISSIONS
         // TODO (1) Take location and storage permission in login activity itself
 
+        // Payment method
+        // DONE ASK for payment type in AlertDialog [upi or cash] in WelcomeActivity
+
         // UI
         // DONE (1) Create slidingPanel for UI [Ride selection]
         // DONE (2) Create custom list layout for slidingPanel ride selection
@@ -139,7 +139,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // Requirement
         // DONE (1) onClick of any ride picture from slidingPanel
         // DONE     -> should 'ADD' Ride to DB
-        // TODO     -> ASK for payment type in AlertDialog [upi or cash]
         // TODO     -> [OPTIONAL] setView() to AlertDialog which has ProgressBar
 
         // LATER !!!
@@ -188,6 +187,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
         // onClick builds Ride object and adds to Rides
         listView.setOnItemClickListener((adapterView, view, i, l) -> {
+
             switch(i) {
                 case 0:
                     showAlert();
@@ -207,6 +207,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void bookRide(String type, int index) {
+
         Latlng p1 = new Latlng(String.valueOf(place1.getPosition().latitude),
                 String.valueOf(place1.getPosition().longitude));
         Latlng p2 = new Latlng(String.valueOf(place2.getPosition().latitude),
@@ -215,7 +216,8 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         String price = String.valueOf(mPrices[index]);
         String distance = String.valueOf(calcDistance());
         // TODO get payment from AlertDialog, before showing booking AlertDialog
-        String payment = "upi";
+        String payment = ChooseRideActivity.payment;
+        //String payment = "UPI";
 
         // create Ride object for firebase based on the type of ride selected
         Ride ride = null;
@@ -253,6 +255,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void showAlert() {
+
         dialogBuilder = new AlertDialog.Builder(this)
                 .setTitle("Please wait")
                 .setMessage("Looking for rides ...")

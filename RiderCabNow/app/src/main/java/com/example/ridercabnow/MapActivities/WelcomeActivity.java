@@ -2,9 +2,11 @@ package com.example.ridercabnow.MapActivities;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.ColorSpace;
@@ -22,6 +24,7 @@ import android.widget.Toast;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.utils.Constants;
+import com.example.ridercabnow.utils.PaymentDialog;
 import com.google.android.gms.common.api.Status;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -64,6 +67,9 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
     private FusedLocationProviderClient mFusedLocationClient;
     private Location currentLocation;
     private static final float DEFAULT_ZOOM = 16f;
+
+    // Intent values
+    public static String[] p1, p2;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -152,20 +158,20 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
 
                 Log.d(TAG, "onCreate: " + place1.getPosition() + place2.getPosition());
 
-                String[] p1 = new String[] {
+                // save static place values
+                WelcomeActivity.p1 = new String[] {
                         String.valueOf(place1.getPosition().latitude),
                         String.valueOf(place1.getPosition().longitude)
                 };
 
-                String[] p2 = new String[] {
+                WelcomeActivity.p2 = new String[] {
                         String.valueOf(place2.getPosition().latitude),
                         String.valueOf(place2.getPosition().longitude)
                 };
 
-                Intent i = new Intent(this, ChooseRideActivity.class);
-                i.putExtra("place1", p1);
-                i.putExtra("place2", p2);
-                startActivity(i);
+                // select payment and move to ChooseRideActivity
+                new PaymentDialog().show(getSupportFragmentManager(), "PaymentSelection");
+
             }
         });
 

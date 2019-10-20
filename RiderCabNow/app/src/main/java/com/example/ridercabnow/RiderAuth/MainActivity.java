@@ -66,6 +66,9 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
+        // Grab Permissions
+
+
         // Init firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
