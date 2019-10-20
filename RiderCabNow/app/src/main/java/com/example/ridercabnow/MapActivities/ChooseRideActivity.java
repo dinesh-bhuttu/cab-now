@@ -8,16 +8,15 @@ import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.DragEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import com.example.ridercabnow.Adapters.RideListAdapter;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.directionhelpers.FetchURL;
@@ -43,16 +42,15 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
     // Directions
     private GoogleMap mMap;
-    Button getDirection;
     private Polyline currentPolyline;
-
-    // Places
-    private final String API_KEY = Constants.GOOGLE_MAPS_API_KEY;
 
     // Location
     private FusedLocationProviderClient mFusedLocationClient;
-    private Location currentLocation;
     private static final float DEFAULT_ZOOM = 16f;
+
+    private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
+    private Float[] mPrices = new Float[] {0f,0f,0f};
+    private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -107,11 +105,11 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
         // UI
         // DONE (1) Create slidingPanel for UI [Ride selection]
-        // TODO (2) Create custom list layout for slidingPanel ride selection
-        //          Custom list should have
+        // DONE (2) Create custom list layout for slidingPanel ride selection
+        // DONE         Custom list should have
         //          -> Ride name
         //          -> Ride picture
-        //          -> Ride price estimate [implement pricing policy crap]
+        // TODO     -> Ride price estimate [implement pricing policy crap]
 
         // Pre work
         // DONE (3) init onMapReady, FusedLocationProviderClient and draw marker options
@@ -147,17 +145,36 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
-        // umano slidingView
+        // umano slidingupPanel
         ListView listView = findViewById(R.id.listView);
-         listView.setAdapter(new ArrayAdapter<>(this, android.R.layout.simple_list_item_1,
-                 new String[]{"Auto", "Micro", "Sedan"}));
+        RideListAdapter adapter = new RideListAdapter(this, mRides, mImages, mPrices);
+        listView.setAdapter(adapter);
 
-         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-             @Override
-             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+        // Default value of all prices is 0f
+        // After pricing policy, estimate new prices and change mPrices[]
+        // call notifyDataSetChanged() on adapter to update prices in list
+        // testing update values
+        mPrices[0] = 1f;
+        mPrices[1] = 2f;
+        mPrices[2] = 3f;
+        adapter.notifyDataSetChanged();
 
-             }
-         });
+        listView.setOnItemClickListener((adapterView, view, i, l) -> {
+            switch(i) {
+                case 0:
+                    // TODO Book auto
+                    Toast.makeText(ChooseRideActivity.this, "Auto", Toast.LENGTH_SHORT).show();
+                    break;
+                case 1:
+                    // TODO Book micro
+                    Toast.makeText(ChooseRideActivity.this, "Micro", Toast.LENGTH_SHORT).show();
+                    break;
+                case 2:
+                    // TODO Book sedan
+                    Toast.makeText(ChooseRideActivity.this, "Sedan", Toast.LENGTH_SHORT).show();
+                    break;
+            }
+        });
 
 
     }
@@ -243,8 +260,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // Output format
         String output = "json";
         // Building the url to the web service
-        String url = "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + Constants.GOOGLE_MAPS_API_KEY;
-        return url;
+        return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + Constants.GOOGLE_MAPS_API_KEY;
     }
 
 
