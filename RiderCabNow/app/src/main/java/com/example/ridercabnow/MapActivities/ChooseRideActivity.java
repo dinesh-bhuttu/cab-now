@@ -1,9 +1,12 @@
 package com.example.ridercabnow.MapActivities;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
@@ -21,6 +24,8 @@ import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.directionhelpers.FetchURL;
 import com.example.ridercabnow.directionhelpers.TaskLoadedCallback;
+import com.example.ridercabnow.models.Latlng;
+import com.example.ridercabnow.models.Ride;
 import com.example.ridercabnow.utils.Constants;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
@@ -33,6 +38,12 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 
 public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
@@ -48,9 +59,19 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     private FusedLocationProviderClient mFusedLocationClient;
     private static final float DEFAULT_ZOOM = 16f;
 
+    // umano ListView params
     private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
     private Float[] mPrices = new Float[] {0f,0f,0f};
     private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
+
+    // AlertDialog after selecting one of the ride types
+    AlertDialog.Builder dialogBuilder;
+
+    // Firebase
+    String rid = "";
+    FirebaseAuth firebaseAuth;
+    FirebaseDatabase firebaseDatabase;
+    DatabaseReference databaseReference;
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -100,8 +121,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
 
         // PERMISSIONS
-        // TODO (1) Take location and storage permission in login activity
-        // TODO (2) Change Rating bar in profile to be READONLY !
+        // TODO (1) Take location and storage permission in login activity itself
 
         // UI
         // DONE (1) Create slidingPanel for UI [Ride selection]
@@ -109,22 +129,33 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // DONE         Custom list should have
         //          -> Ride name
         //          -> Ride picture
-        // TODO     -> Ride price estimate [implement pricing policy crap]
+        // TODO (3) -> [implement pricing policy crap] in calcPrice()
+        // TODO     -> Complete calcDistance() and calcPrice() methods
 
         // Pre work
-        // DONE (3) init onMapReady, FusedLocationProviderClient and draw marker options
-        // DONE (4) Integrate directions API draw PolyLine from place1 to place2
+        // DONE (1) init onMapReady, FusedLocationProviderClient and draw marker options
+        // DONE (2) Integrate directions API draw PolyLine from place1 to place2
 
         // Requirement
-        // TODO (5) onClick of any ride picture from slidingPanel
-        //          -> should 'ADD' Ride to DB
-        //          -> should show a custom AlertDialog with progressDialog, cancelRide
+        // DONE (1) onClick of any ride picture from slidingPanel
+        // DONE     -> should 'ADD' Ride to DB
+        // TODO     -> ASK for payment type in AlertDialog [upi or cash]
+        // TODO     -> [OPTIONAL] setView() to AlertDialog which has ProgressBar
 
+        // LATER !!!
         // Post Driver app completion integrate this
-        // TODO (6) When driver accepts show his location and draw a PolyLine
+        // TODO (1) When driver accepts
+        //          -> change listView to show static emergency contact or sos and notifyAdapter
+        //          -> show driver location and draw a PolyLine
 
         // Post ride completion
-        // TODO (7) Integrate payment and all that crap...
+        // TODO (2) Make a button in listView to simulate ride completion for rider
+        // TODO (3) Integrate payment and all that crap...
+
+        // init firebase
+        firebaseAuth = FirebaseAuth.getInstance();
+        firebaseDatabase = FirebaseDatabase.getInstance();
+        databaseReference = firebaseDatabase.getReference("Rides");
 
         // Get toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -151,32 +182,101 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         listView.setAdapter(adapter);
 
         // Default value of all prices is 0f
-        // After pricing policy, estimate new prices and change mPrices[]
-        // call notifyDataSetChanged() on adapter to update prices in list
-        // testing update values
-        mPrices[0] = 1f;
-        mPrices[1] = 2f;
-        mPrices[2] = 3f;
+        // mPrices[] is updated with proper prices after calcPrice()
+        calcPrice();
         adapter.notifyDataSetChanged();
 
+        // onClick builds Ride object and adds to Rides
         listView.setOnItemClickListener((adapterView, view, i, l) -> {
             switch(i) {
                 case 0:
-                    // TODO Book auto
-                    Toast.makeText(ChooseRideActivity.this, "Auto", Toast.LENGTH_SHORT).show();
+                    showAlert();
+                    bookRide("auto", i);
                     break;
                 case 1:
-                    // TODO Book micro
-                    Toast.makeText(ChooseRideActivity.this, "Micro", Toast.LENGTH_SHORT).show();
+                    showAlert();
+                    bookRide("micro", i);
                     break;
                 case 2:
-                    // TODO Book sedan
-                    Toast.makeText(ChooseRideActivity.this, "Sedan", Toast.LENGTH_SHORT).show();
+                    showAlert();
+                    bookRide("sedan", i);
                     break;
             }
         });
 
+    }
 
+    private void bookRide(String type, int index) {
+        Latlng p1 = new Latlng(String.valueOf(place1.getPosition().latitude),
+                String.valueOf(place1.getPosition().longitude));
+        Latlng p2 = new Latlng(String.valueOf(place2.getPosition().latitude),
+                String.valueOf(place2.getPosition().longitude));
+
+        String price = String.valueOf(mPrices[index]);
+        String distance = String.valueOf(calcDistance());
+        // TODO get payment from AlertDialog, before showing booking AlertDialog
+        String payment = "upi";
+
+        // create Ride object for firebase based on the type of ride selected
+        Ride ride = null;
+        switch (type) {
+            case "auto": {
+                Toast.makeText(this, "Booking an auto ...", Toast.LENGTH_SHORT).show();
+
+                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                        "", firebaseAuth.getUid(), "auto");
+                break;
+            }
+            case "micro": {
+                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                        "", firebaseAuth.getUid(), "micro");
+                break;
+            }
+            case "sedan": {
+                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                        "", firebaseAuth.getUid(), "sedan");
+                break;
+            }
+        }
+
+        if(ride != null) {
+            Log.d(TAG, "bookRide: for uid -> " + ride.getRider());
+        }
+
+        // create global rid and use it to save ride object
+        rid = databaseReference.push().getKey();
+        if(rid != null) {
+            databaseReference.child(rid).setValue(ride);
+        }
+    }
+
+    private void showAlert() {
+        dialogBuilder = new AlertDialog.Builder(this)
+                .setTitle("Please wait")
+                .setMessage("Looking for rides ...")
+                .setCancelable(false)
+                .setNegativeButton("cancel", (dialogInterface, i) -> {
+                    databaseReference.child(rid).child("status").setValue("cancelled");
+                    dialogInterface.dismiss();
+                    Toast.makeText(ChooseRideActivity.this, "Ride cancelled", Toast.LENGTH_SHORT).show();
+                });
+
+        dialogBuilder.show();
+    }
+
+    private void calcPrice() {
+        // TODO implement pricing policy here for different rides
+        //  change values of Float[] mPrices index:0->auto, 1->micro, 2->sedan
+        mPrices[0] = 30f;
+        mPrices[1] = 100f;
+        mPrices[2] = 300f;
+    }
+
+    private float calcDistance() {
+        // TODO somehow calculate distance and return float of that
+        return 3.3f;
     }
 
     private void getLastLocation() {
@@ -226,7 +326,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         switch (item.getItemId())
         {
             case R.id.menuProfile:
-                Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this , ProfileActivity.class));
                 return true;
 

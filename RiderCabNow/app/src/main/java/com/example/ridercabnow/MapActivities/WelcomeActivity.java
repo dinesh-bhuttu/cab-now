@@ -240,7 +240,6 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         switch (item.getItemId())
         {
             case R.id.menuProfile:
-                Toast.makeText(this, "Profile selected", Toast.LENGTH_SHORT).show();
                 startActivity(new Intent(this , ProfileActivity.class));
                 return true;
 

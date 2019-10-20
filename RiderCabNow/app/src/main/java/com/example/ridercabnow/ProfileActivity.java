@@ -90,6 +90,7 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         riderEmail.setText(p.getRider_email());
         riderPhone.setText(p.getRider_phone());
         riderRating.setRating(p.getAverage_Rating());
+        riderRating.setIsIndicator(true);
     }
 
     private void initViews() {
