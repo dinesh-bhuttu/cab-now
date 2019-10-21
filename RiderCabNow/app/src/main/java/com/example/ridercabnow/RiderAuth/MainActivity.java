@@ -166,7 +166,8 @@ public class MainActivity extends AppCompatActivity {
 
 
                                 // Use email as key and password as value
-                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
+                                String uuid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+                                users.child(uuid)
                                         .setValue(user)
                                         .addOnSuccessListener(aVoid -> Snackbar.make(rootLayout, "Registered Successfully !!", Snackbar.LENGTH_SHORT).show())
                                         .addOnFailureListener(e -> Snackbar.make(rootLayout, "Registration failed. Please try again.\n"+e.getMessage(), Snackbar.LENGTH_SHORT).show());
@@ -235,6 +236,7 @@ public class MainActivity extends AppCompatActivity {
                 final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(MainActivity.this).build();
                 waitingDialog.setTitle("Loading...");
                 waitingDialog.show();
+
 
 
 

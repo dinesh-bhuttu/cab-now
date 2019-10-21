@@ -16,8 +16,10 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.ridercabnow.Adapters.RideListAdapter;
+import com.example.ridercabnow.HistoryActivity;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
+import com.example.ridercabnow.RiderAuth.MainActivity;
 import com.example.ridercabnow.directionhelpers.FetchURL;
 import com.example.ridercabnow.directionhelpers.TaskLoadedCallback;
 import com.example.ridercabnow.models.Latlng;
@@ -55,7 +57,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     // umano ListView params
     private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
     private Float[] mPrices = new Float[] {0f,0f,0f};
-    private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
+    private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro1, R.drawable.sedan2};
 
     // AlertDialog after selecting one of the ride types
     AlertDialog.Builder dialogBuilder;
@@ -230,13 +232,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 break;
             }
             case "micro": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
             case "sedan": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
@@ -272,6 +274,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     private void calcPrice() {
         // TODO implement pricing policy here for different rides
         //  change values of Float[] mPrices index:0->auto, 1->micro, 2->sedan
+        int AUTO_BASE = 20, AUTO_KM = 10;
+        int MICRO_BASE = 50, MICRO_KM = 25;
+        int SEDAN_BASE = 100, SEDAN_KM = 50;
+
+        float distance = calcDistance();
+
+        // base applies for < 1km, for every km after base
         mPrices[0] = 30f;
         mPrices[1] = 100f;
         mPrices[2] = 300f;
@@ -293,7 +302,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
                 if (mapFragment != null) {
                     mapFragment.getMapAsync(ChooseRideActivity.this);
-
                 }
             }
             else
@@ -333,16 +341,16 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 return true;
 
             case R.id.menuHistory:
-                // TODO show history activity out of app
-                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(this, "Showing your History", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(getApplicationContext(), HistoryActivity.class));
                 return true;
 
             case R.id.menuLogout:
-                // TODO 1) logout out of the app
-                // TODO 2) [optional] delete stored shared pref variables for new login info
-                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
+                // TODO [optional] delete stored shared pref variables for new login info
 
+                Toast.makeText(this, "Logging out", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
                 return true;
 
             default:

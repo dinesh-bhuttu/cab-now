@@ -21,8 +21,10 @@ import android.widget.Button;
 import android.widget.Toast;
 
 
+import com.example.ridercabnow.HistoryActivity;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
+import com.example.ridercabnow.RiderAuth.MainActivity;
 import com.example.ridercabnow.utils.Constants;
 import com.example.ridercabnow.utils.PaymentDialog;
 import com.google.android.gms.common.api.Status;
@@ -250,15 +252,15 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                 return true;
 
             case R.id.menuHistory:
-                // TODO show history activity out of app
-                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
-
+                Toast.makeText(this, "Showing your History", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(getApplicationContext(), HistoryActivity.class));
                 return true;
 
             case R.id.menuLogout:
-                // TODO 1) logout out of the app
-                // TODO 2) [optional] delete stored shared pref variables for new login info
-                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                finish();
+                // TODO [optional] delete stored shared pref variables for new login info
+                Toast.makeText(this, "Logging out", Toast.LENGTH_SHORT).show();
 
                 return true;
 
