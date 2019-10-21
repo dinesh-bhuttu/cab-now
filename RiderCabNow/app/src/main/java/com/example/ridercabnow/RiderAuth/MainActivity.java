@@ -29,9 +29,6 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-
-import java.util.Map;
-
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -166,8 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
 
                                 // Use email as key and password as value
-                                String uuid = FirebaseAuth.getInstance().getCurrentUser().getUid();
-                                users.child(uuid)
+                                users.child(FirebaseAuth.getInstance().getCurrentUser().getUid())
                                         .setValue(user)
                                         .addOnSuccessListener(aVoid -> Snackbar.make(rootLayout, "Registered Successfully !!", Snackbar.LENGTH_SHORT).show())
                                         .addOnFailureListener(e -> Snackbar.make(rootLayout, "Registration failed. Please try again.\n"+e.getMessage(), Snackbar.LENGTH_SHORT).show());
@@ -204,6 +200,7 @@ public class MainActivity extends AppCompatActivity {
                 waitingDialog.show();
 
                 startActivity(new Intent(MainActivity.this, ResetPasswordActivity.class));
+
                 finish();
             }
         });
@@ -236,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
                 final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(MainActivity.this).build();
                 waitingDialog.setTitle("Loading...");
                 waitingDialog.show();
-
 
 
 

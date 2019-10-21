@@ -17,17 +17,16 @@
         android:text="Full name"
         android:layout_marginTop="40dp"
         android:layout_marginStart="20dp"
-        android:textSize="16sp"/>
+        android:textSize="18sp"/>
 
     <TextView
         android:id="@+id/tvRidername"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Name goes here"
-        android:layout_marginTop="5dp"
+        android:layout_marginTop="10dp"
         android:layout_marginStart="20dp"
-        android:textSize="24sp"
-        android:textColor="#000"/>
+        android:textSize="24sp"/>
 
 
     <TextView
@@ -37,17 +36,16 @@
         android:text="Phone number"
         android:layout_marginTop="50dp"
         android:layout_marginStart="20dp"
-        android:textSize="16sp"/>
+        android:textSize="18sp"/>
 
     <TextView
         android:id="@+id/tvRiderphone"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Phone goes here"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="20dp"
-        android:textSize="24sp"
-        android:textColor="#000"/>
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="24sp"/>
 
     <TextView
         android:id="@+id/tvEmail"
@@ -55,18 +53,17 @@
         android:layout_height="wrap_content"
         android:text="Email"
         android:layout_marginTop="50dp"
-        android:layout_marginStart="20dp"
-        android:textSize="16sp"/>
+        android:layout_marginLeft="20dp"
+        android:textSize="18sp"/>
 
     <TextView
         android:id="@+id/tvRideremail"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Email goes here"
-        android:layout_marginTop="5dp"
-        android:layout_marginStart="20dp"
-        android:textSize="24sp"
-        android:textColor="#000"/>
+        android:layout_marginTop="10dp"
+        android:layout_marginLeft="20dp"
+        android:textSize="24sp"/>
 
 
     <LinearLayout
@@ -89,8 +86,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:rating="0.0"
-            android:layout_marginStart="20dp"
-            android:theme="@style/RatingBar"/>
+            android:layout_marginStart="20dp"/>
 
     </LinearLayout>
 

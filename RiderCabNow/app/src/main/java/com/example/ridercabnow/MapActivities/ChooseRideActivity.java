@@ -6,6 +6,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import android.app.AlertDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.location.Location;
 import android.os.Bundle;
 import android.util.Log;
@@ -16,7 +17,6 @@ import android.widget.ListView;
 import android.widget.Toast;
 
 import com.example.ridercabnow.Adapters.RideListAdapter;
-import com.example.ridercabnow.HistoryActivity;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.RiderAuth.MainActivity;
@@ -27,11 +27,13 @@ import com.example.ridercabnow.models.Ride;
 import com.example.ridercabnow.utils.Constants;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.CameraUpdate;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
@@ -57,7 +59,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     // umano ListView params
     private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
     private Float[] mPrices = new Float[] {0f,0f,0f};
-    private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro1, R.drawable.sedan2};
+    private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
 
     // AlertDialog after selecting one of the ride types
     AlertDialog.Builder dialogBuilder;
@@ -88,7 +90,22 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         else {
             drawPolyLine();
         }
-        mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place1.getPosition(), DEFAULT_ZOOM));
+        LatLngBounds.Builder builder = new LatLngBounds.Builder();
+
+        //the include method will calculate the min and max bound.
+        builder.include(place1.getPosition());
+        builder.include(place2.getPosition());
+
+        LatLngBounds bounds = builder.build();
+
+        int width = getResources().getDisplayMetrics().widthPixels;
+        int height = getResources().getDisplayMetrics().heightPixels;
+        int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
+
+        CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
+
+        mMap.moveCamera(cu);
+        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place1.getPosition(), DEFAULT_ZOOM));
 
         mMap.setMyLocationEnabled(true);
 
@@ -120,7 +137,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
 
         // PERMISSIONS
-        // TODO (1) Take location and storage permission in login activity itself
+        // DONE (1) Take location and storage permission in login activity itself
 
         // Payment method
         // DONE ASK for payment type in AlertDialog [upi or cash] in WelcomeActivity
@@ -232,13 +249,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 break;
             }
             case "micro": {
-                Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
             case "sedan": {
-                Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
@@ -274,13 +291,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     private void calcPrice() {
         // TODO implement pricing policy here for different rides
         //  change values of Float[] mPrices index:0->auto, 1->micro, 2->sedan
-        int AUTO_BASE = 20, AUTO_KM = 10;
-        int MICRO_BASE = 50, MICRO_KM = 25;
-        int SEDAN_BASE = 100, SEDAN_KM = 50;
-
-        float distance = calcDistance();
-
-        // base applies for < 1km, for every km after base
         mPrices[0] = 30f;
         mPrices[1] = 100f;
         mPrices[2] = 300f;
@@ -302,6 +312,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
                 if (mapFragment != null) {
                     mapFragment.getMapAsync(ChooseRideActivity.this);
+
                 }
             }
             else
@@ -341,16 +352,25 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 return true;
 
             case R.id.menuHistory:
-                Toast.makeText(this, "Showing your History", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getApplicationContext(), HistoryActivity.class));
+                // TODO show history activity out of app
+                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+
                 return true;
 
             case R.id.menuLogout:
-                // TODO [optional] delete stored shared pref variables for new login info
+                // DONE 1) logout out of the app
+                // DONE 2) [optional] delete stored shared pref variables for new login info -- DONE
+                Intent logoutintent = new Intent(this, MainActivity.class);
+                startActivity(logoutintent);
 
-                Toast.makeText(this, "Logging out", Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                SharedPreferences sharedPreferences;
+                sharedPreferences = getSharedPreferences("AuthPrefs", MODE_PRIVATE);
+                SharedPreferences.Editor editor = sharedPreferences.edit();
+                editor.putString("email", "");
+                editor.putString("password","");
+                editor.apply();
                 finish();
+                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
                 return true;
 
             default:

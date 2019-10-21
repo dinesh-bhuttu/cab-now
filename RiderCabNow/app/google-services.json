@@ -127,12 +127,57 @@
     },
     {
       "client_info": {
+        "mobilesdk_app_id": "1:670419874762:android:cf311872fcc17fa3815533",
+        "android_client_info": {
+          "package_name": "com.example.drivercabnow"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "670419874762-atin7k77m74eue5rbvjvd96ius2sap19.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.drivercabnow",
+            "certificate_hash": "688050648c392a8b5e7987487c014703d4c24d0c"
+          }
+        },
+        {
+          "client_id": "670419874762-v5evb5k28oqthcods8h7e9atq595l3si.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDLmbx8uLVamS02M3PESKnHPEAdTpdqDG4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "670419874762-v5evb5k28oqthcods8h7e9atq595l3si.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
         "mobilesdk_app_id": "1:670419874762:android:31cdf4d79c1ac939815533",
         "android_client_info": {
           "package_name": "com.example.ridercabnow"
         }
       },
       "oauth_client": [
+        {
+          "client_id": "670419874762-l3b4cua1lf3gn0odffal3uk93p5m8rob.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.ridercabnow",
+            "certificate_hash": "4429b1d774ba98e4eea031708ce6c3627cb85c10"
+          }
+        },
         {
           "client_id": "670419874762-qoidkm9qd3e8abptiohjj9sn02ovirgt.apps.googleusercontent.com",
           "client_type": 1,
