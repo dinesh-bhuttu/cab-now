@@ -3,6 +3,7 @@ package com.example.drivercabnow;
 import android.content.Intent;
 
 import com.daimajia.androidanimations.library.Techniques;
+import com.example.drivercabnow.MapActivities.DriverWelcomeActivity;
 import com.example.drivercabnow.Utils.Constants;
 import com.viksaa.sssplash.lib.activity.AwesomeSplash;
 import com.viksaa.sssplash.lib.cnst.Flags;
@@ -27,7 +28,7 @@ public class SplashActivity extends AwesomeSplash {
         configSplash.setAnimLogoSplashTechnique(Techniques.Flash); //choose one form Techniques (ref: https://github.com/daimajia/AndroidViewAnimations)
 
         //Customize Title
-        configSplash.setTitleSplash("User Ride Request!! Source (12.123456, 77.665555");
+        configSplash.setTitleSplash("User Ride Request!!");
         configSplash.setTitleTextColor(R.color.whiteColor);
         configSplash.setTitleTextSize(30f); //float value
         configSplash.setAnimTitleDuration(1000);
@@ -37,7 +38,7 @@ public class SplashActivity extends AwesomeSplash {
 
     @Override
     public void animationsFinished() {
-        startActivity(new Intent(SplashActivity.this, MainActivity.class));
+        startActivity(new Intent(SplashActivity.this, RecycleActivity.class));
         finish();
     }
 }

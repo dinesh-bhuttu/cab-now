@@ -16,6 +16,8 @@ package com.example.drivercabnow.Models;
 //        }
 public class Ride {
 
+    // Status can be "Active", "Searching", "Finished", "Cancelled"
+
     // Latlng is our model class, not the builtin LatLng class
     private Latlng source;
     private Latlng destination;

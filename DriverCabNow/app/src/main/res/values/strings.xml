@@ -1,3 +1,12 @@
 <resources>
-    <string name="app_name">DriverCabNow</string>
+    <string name="app_name">Driver</string>
+    <string name="GOOGLE_MAPS_API_KEY">AIzaSyB5_O7Hzjg_DwkRD2br2vgp4QkELw9v_9w</string>
+    <string name="title_location_permission">Location Permission Required</string>
+    <string name="text_location_permission">Please give CabNow access to your location to proceed</string>
+    <string name="ok">Allow</string>
+    <string name="notok">Deny</string>
+    <string-array name="payments">
+        <item>UPI</item>
+        <item>Cash</item>
+    </string-array>
 </resources>

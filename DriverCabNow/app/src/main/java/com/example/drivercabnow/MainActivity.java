@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -35,12 +36,17 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class MainActivity extends AppCompatActivity {
+    private static final String TAG = "MainActivity";
     Button btnDriverLogin, btnDriverRegister;
     RelativeLayout rootLayout;
     FirebaseAuth auth;
     FirebaseDatabase db;
     DatabaseReference users;
     DatabaseReference drivers;
+
+    // shared pref variables
+    String riderEmail = "", riderPassword = "";
+
     @Override
     protected void attachBaseContext(Context newBase) {
         super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
@@ -69,9 +75,7 @@ public class MainActivity extends AppCompatActivity {
         btnDriverRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(MainActivity.this, SplashActivity.class));
-                finish();
-                //showDriverRegisterDialog();
+                showDriverRegisterDialog();
             }
         });
         btnDriverLogin.setOnClickListener(new View.OnClickListener() {
@@ -80,6 +84,13 @@ public class MainActivity extends AppCompatActivity {
                 showDriverLoginDialog();
             }
         });
+
+        // get SharedPreference credentials into riderEmail and pass global variables
+        getSharedPrefVars();
+        if(doCredsExist()) {
+            Log.d(TAG, "onCreate: " + riderEmail + " " + riderPassword);
+            btnDriverLogin.performClick();
+        }
     }
 
 
@@ -290,6 +301,10 @@ public class MainActivity extends AppCompatActivity {
                                         @Override
                                         public void onSuccess(AuthResult authResult) {
                                             waitingDialog.dismiss();
+
+                                            // Write shared preferences
+                                            writeSharedPrefs(edtEmail.getText().toString(),
+                                                    edtPassword.getText().toString());
                                             startActivity(new Intent(MainActivity.this, DriverWelcomeActivity.class));
                                             finish();
                                         }
@@ -322,5 +337,32 @@ public class MainActivity extends AppCompatActivity {
         });
 
         dialog.show();
+
+        // check for global variables
+        if(doCredsExist()) {
+            edtEmail.setText(riderEmail);
+            edtPassword.setText(riderPassword);
+        }
+    }
+
+    private void writeSharedPrefs(String email, String password) {
+        Log.d(TAG, "addToSharedPref: " + email + " " + password);
+        SharedPreferences prefs = getSharedPreferences("AuthPrefs", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("email", email);
+        editor.putString("password", password);
+        editor.apply();
+    }
+
+    private void getSharedPrefVars() {
+        riderEmail = getSharedPreferences("AuthPrefs", MODE_PRIVATE)
+                .getString("email", "");
+        riderPassword = getSharedPreferences("AuthPrefs", MODE_PRIVATE)
+                .getString("password", "");
+        Log.d(TAG, "Shared pref variables : " + riderEmail + " " + riderPassword);
+    }
+
+    private boolean doCredsExist() {
+        return !riderEmail.equals("") && !riderPassword.equals("");
     }
 }

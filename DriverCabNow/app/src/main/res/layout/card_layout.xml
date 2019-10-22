@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:orientation="vertical"
+    android:background="#F5EBBD"
+    android:tag="cards main container"
+    tools:context=".RecycleActivity">
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardView"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:layout_margin="20dp"
+        card_view:cardBackgroundColor="#FFFFFF"
+        card_view:cardCornerRadius="30dp"
+        card_view:cardElevation="10dp">
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="20dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/customerName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Customer Name : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+
+                <TextView
+                    android:id="@+id/paymentType"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Payment Type : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+
+                <TextView
+                    android:id="@+id/customerLocation"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Location : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+
+                <TextView
+                    android:id="@+id/destination"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Destination : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+
+                <TextView
+                    android:id="@+id/distance"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Source Distance : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+
+            </LinearLayout>
+
+            <Button
+                android:id="@+id/acceptRide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentBottom="true"
+                android:background="#6B37FF00"
+                android:text="Accept"
+                android:textColor="@android:color/black"
+                android:textSize="14dp"></Button>
+
+            <Button
+                android:id="@+id/rejectRide"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true"
+                android:layout_alignParentBottom="true"
+                android:background="#6BFC0000"
+                android:text="Reject"
+                android:textColor="@android:color/black"
+                android:textSize="14dp"></Button>
+        </RelativeLayout>
+
+    </androidx.cardview.widget.CardView>
+</LinearLayout>
