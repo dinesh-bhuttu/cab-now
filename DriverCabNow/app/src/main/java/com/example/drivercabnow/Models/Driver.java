@@ -1,4 +1,4 @@
-package com.example.drivercabnow;
+package com.example.drivercabnow.Models;
 // FIREBASE DATABASE STRUCTURE
 //{
 //        "firebase_gen_driver_id":{
@@ -14,7 +14,6 @@ package com.example.drivercabnow;
 //        }
 //}
 
-import com.google.android.gms.maps.model.LatLng;
 
 public class Driver {
     private String Driver_email, Driver_name, Driver_phone, UPI_Id, Vehicle_no, License_no, Cab_type, Cab_status;
@@ -27,12 +26,15 @@ public class Driver {
     public void setDriver_email(String driver_email) {
         Driver_email = driver_email;
     }
+
     public void setDriver_name(String driver_name) {
         Driver_name = driver_name;
     }
+
     public void setDriver_phone(String driver_phone) {
         Driver_phone = driver_phone;
     }
+
     public void setUPI_Id(String UPI_Id) {
         this.UPI_Id = UPI_Id;
     }
@@ -40,9 +42,11 @@ public class Driver {
     public String getLicense_no() {
         return License_no;
     }
+
     public String getType() {
         return Type;
     }
+
     public void setType(String type) {
         Type = type;
     }
@@ -101,9 +105,11 @@ public class Driver {
     public void setCab_type(String cab_type) {
         Cab_type = cab_type;
     }
-    public void setSource(Latlng newSource) { source = newSource; }
     public void setVehicle_no(String vehicle_no) {
         Vehicle_no = vehicle_no;
+    }
+    public void setSource(Latlng newSource) {
+        source = newSource;
     }
     public void setLicense_no(String license_no) {
         License_no = license_no;

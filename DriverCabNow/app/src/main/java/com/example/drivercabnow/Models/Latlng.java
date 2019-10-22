@@ -1,4 +1,4 @@
-package com.example.drivercabnow;
+package com.example.drivercabnow.Models;
 
 public class Latlng {
     private String lat;

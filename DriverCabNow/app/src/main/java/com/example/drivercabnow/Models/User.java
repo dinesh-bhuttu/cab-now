@@ -1,4 +1,5 @@
-package com.example.drivercabnow;
+package com.example.drivercabnow.Models;
+
 // FIREBASE DATABASE STRUCTURE
 //        "firebase_gen_rider_id":{
 //        "Rider_email":email,

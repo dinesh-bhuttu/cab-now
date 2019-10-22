@@ -13,6 +13,9 @@ import android.widget.Button;
 import android.widget.RadioGroup;
 import android.widget.RelativeLayout;
 
+import com.example.drivercabnow.DriverAuth.ResetPasswordActivity;
+import com.example.drivercabnow.MapActivities.DriverWelcomeActivity;
+import com.example.drivercabnow.Models.Driver;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.snackbar.Snackbar;
@@ -66,7 +69,9 @@ public class MainActivity extends AppCompatActivity {
         btnDriverRegister.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDriverRegisterDialog();
+                startActivity(new Intent(MainActivity.this, SplashActivity.class));
+                finish();
+                //showDriverRegisterDialog();
             }
         });
         btnDriverLogin.setOnClickListener(new View.OnClickListener() {

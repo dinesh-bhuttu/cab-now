@@ -1,6 +1,8 @@
-package com.example.drivercabnow;
+package com.example.drivercabnow.MapActivities;
 
 import android.os.Bundle;
+
+import com.example.drivercabnow.R;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;

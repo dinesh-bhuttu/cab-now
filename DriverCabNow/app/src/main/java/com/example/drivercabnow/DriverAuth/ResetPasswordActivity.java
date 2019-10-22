@@ -1,4 +1,4 @@
-package com.example.drivercabnow;
+package com.example.drivercabnow.DriverAuth;
 
 
 import android.content.Context;
@@ -11,6 +11,8 @@ import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.example.drivercabnow.MainActivity;
+import com.example.drivercabnow.R;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;

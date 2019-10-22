@@ -12,5 +12,7 @@
     <color name="ballReleaseColor">#9E9E9E</color>
     <color name="resetbuttoncolor">#FA109C6B</color>
     <color name="driverbtn">#FFFF00</color>
+    <color name="splashColor">#950296F8</color>
+    <color name="whiteColor">#ffffff</color>
 </resources>
 
