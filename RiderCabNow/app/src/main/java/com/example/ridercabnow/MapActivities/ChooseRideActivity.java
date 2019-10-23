@@ -3,6 +3,7 @@ package com.example.ridercabnow.MapActivities;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 import android.app.AlertDialog;
 import android.content.Intent;
@@ -130,6 +131,10 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
+                .setDefaultFontPath("fonts/arkhip_font.ttf")
+                .setFontAttrId(R.attr.fontPath)
+                .build());
         setContentView(R.layout.activity_choose_ride);
 
         // Gets source and dest MarkerOptions from previous activity
@@ -235,8 +240,8 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         String price = String.valueOf(mPrices[index]);
         String distance = String.valueOf(calcDistance());
         // TODO get payment from AlertDialog, before showing booking AlertDialog
-        String payment = ChooseRideActivity.payment;
-        //String payment = "UPI";
+        //String payment = ChooseRideActivity.payment;
+        String payment = "UPI";
 
         // create Ride object for firebase based on the type of ride selected
         Ride ride = null;
@@ -244,19 +249,19 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             case "auto": {
                 Toast.makeText(this, "Booking an auto ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "auto");
                 break;
             }
             case "micro": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
             case "sedan": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
             }

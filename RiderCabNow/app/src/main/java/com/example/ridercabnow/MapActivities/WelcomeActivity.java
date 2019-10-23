@@ -287,7 +287,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                         Log.d(TAG, "LatLng set to 0 so cant do anything");
                         continue;
                     }
-                    if(driver.getCab_status()=="NA" || driver.getCab_status()=="transit" || driver.getCab_status()=="cancelled") {
+                    if(driver.getCab_status()=="NA" || driver.getCab_status()=="Transit") {
                         Log.d(TAG, "Driver scheduled or unavailable");
                         continue;
                     }
@@ -296,7 +296,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                     Location.distanceBetween(currentLocation.getLatitude(), currentLocation.getLongitude(), src[0].latitude, src[0].longitude, answer);
                     if(answer[0]>distanceRadius*1000) {
                         Log.d(TAG, "Distance=" + answer[0] + " - Failed");
-                        continue;
+                        //continue;
                     }
                     switch(driver.getCab_type()){
                         case "Auto":

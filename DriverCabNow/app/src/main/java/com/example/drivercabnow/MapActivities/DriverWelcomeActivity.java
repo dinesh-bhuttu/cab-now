@@ -163,17 +163,9 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
-        final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverWelcomeActivity.this).build();
-        waitingDialog.setTitle("Looking for customers nearby...");
-        waitingDialog.show();
-
-        Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            public void run() {
-                waitingDialog.dismiss();
-            }
-        }, 5000);
-
+        //final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(DriverWelcomeActivity.this).build();
+        //waitingDialog.setTitle("Looking for customers nearby...");
+        //waitingDialog.show();
         checkRides();
     }
 
@@ -185,7 +177,9 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
                 for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
                     Ride ride = dataSnapshot1.getValue(Ride.class);
                     Log.d(TAG, ride.getStatus());
-                    if(ride.getStatus().equalsIgnoreCase("Searching")) {
+                    Log.d(TAG, "Ride type : "+ride.getVehicle());
+                    Log.d(TAG, "My type : " +MainActivity.text);
+                    if(ride.getStatus().equalsIgnoreCase("Searching") && ride.getVehicle().equalsIgnoreCase("Auto")) {
                         if(count>=0) {
                             count=1;
                             // TODO - Display splash screen and listview - with user, source and destination details

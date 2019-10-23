@@ -17,7 +17,7 @@ import com.example.ridercabnow.R;
 
 public class PaymentDialog extends DialogFragment {
 
-    private String paymentSelected = null;
+    private static String paymentSelected = null;
 
     @NonNull
     @Override

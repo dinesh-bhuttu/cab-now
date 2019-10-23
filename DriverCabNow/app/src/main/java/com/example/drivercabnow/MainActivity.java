@@ -43,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     FirebaseDatabase db;
     DatabaseReference users;
     DatabaseReference drivers;
+    public static String text;
 
     // shared pref variables
     String riderEmail = "", riderPassword = "";
@@ -162,7 +163,6 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 int selected = RadioCab_types.getCheckedRadioButtonId();
-                String text;
                 if(selected==id1){
                     text = "Sedan";
                 }
