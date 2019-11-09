@@ -144,7 +144,8 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
 
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
-        mMap.animateCamera(cu);
+        mMap.moveCamera(cu);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.5f));
     }
 
     @Override
@@ -315,7 +316,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                     mMap.addMarker(new MarkerOptions().position(new LatLng(src[0].latitude, src[0].longitude)).
                             icon(BitmapDescriptorFactory.fromBitmap(
                                     createCustomMarker(WelcomeActivity.this,drawable,driver.getDriver_name()))))
-                            .setTitle("CabNow Services Pvt. Ltd - "+answer[0]+"m");
+                            .setTitle("CabNow Inc - "+answer[0]+"m");
                 }
             }
 
@@ -326,6 +327,7 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
         });
         return driverList;
     }
+
     private void getLastLocation() {
         Task<Location> task = mFusedLocationClient.getLastLocation();
         task.addOnSuccessListener(new OnSuccessListener<Location>() {
@@ -408,17 +410,14 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                 // DONE 1) logout out of the app
                 // DONE 2) [optional] delete stored shared pref variables for new login info -- DONE
                 Intent logoutintent = new Intent(this, MainActivity.class);
-                startActivity(logoutintent);
-
                 SharedPreferences sharedPreferences;
                 sharedPreferences = getSharedPreferences("AuthPrefs", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("email", "");
                 editor.putString("password","");
                 editor.apply();
-                finish();
-                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
-                return true;
+                Toast.makeText(this, "Logging out", Toast.LENGTH_SHORT).show();
+                startActivity(logoutintent);
 
             default:
                 return super.onOptionsItemSelected(item);

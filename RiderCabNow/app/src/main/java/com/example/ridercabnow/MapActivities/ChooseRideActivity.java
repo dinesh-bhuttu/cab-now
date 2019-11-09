@@ -41,6 +41,16 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.maps.android.PolyUtil;
+import com.google.maps.android.SphericalUtil;
+
+import java.sql.Date;
+import java.sql.Time;
+import java.text.DecimalFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 
 
 public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
@@ -105,8 +115,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
         mMap.moveCamera(cu);
-        //mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(place1.getPosition(), DEFAULT_ZOOM));
-
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.5f));
         mMap.setMyLocationEnabled(true);
 
     }
@@ -136,32 +145,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         getIntentInfo();
 
 
-        // PERMISSIONS
-        // DONE (1) Take location and storage permission in login activity itself
-
-        // Payment method
-        // DONE ASK for payment type in AlertDialog [upi or cash] in WelcomeActivity
-
-        // UI
-        // DONE (1) Create slidingPanel for UI [Ride selection]
-        // DONE (2) Create custom list layout for slidingPanel ride selection
-        // DONE         Custom list should have
-        //          -> Ride name
-        //          -> Ride picture
-        // TODO (3) -> [implement pricing policy crap] in calcPrice()
-        // TODO     -> Complete calcDistance() and calcPrice() methods
-
-        // Pre work
-        // DONE (1) init onMapReady, FusedLocationProviderClient and draw marker options
-        // DONE (2) Integrate directions API draw PolyLine from place1 to place2
-
-        // Requirement
-        // DONE (1) onClick of any ride picture from slidingPanel
-        // DONE     -> should 'ADD' Ride to DB
-        // TODO     -> [OPTIONAL] setView() to AlertDialog which has ProgressBar
-
-        // LATER !!!
-        // Post Driver app completion integrate this
+        // After Driver app completion integrate this
         // TODO (1) When driver accepts
         //          -> change listView to show static emergency contact or sos and notifyAdapter
         //          -> show driver location and draw a PolyLine
@@ -234,9 +218,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
         String price = String.valueOf(mPrices[index]);
         String distance = String.valueOf(calcDistance());
-        // TODO get payment from AlertDialog, before showing booking AlertDialog
         String payment = ChooseRideActivity.payment;
-        //String payment = "UPI";
 
         // create Ride object for firebase based on the type of ride selected
         Ride ride = null;
@@ -249,13 +231,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 break;
             }
             case "micro": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
             case "sedan": {
-                Toast.makeText(this, "Booking an micro ...", Toast.LENGTH_SHORT).show();
+                Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
                 ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
@@ -289,16 +271,54 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     }
 
     private void calcPrice() {
-        // TODO implement pricing policy here for different rides
-        //  change values of Float[] mPrices index:0->auto, 1->micro, 2->sedan
         mPrices[0] = 30f;
         mPrices[1] = 100f;
         mPrices[2] = 300f;
+
+        float BASE_AUTO = 30f, PER_AUTO_KM = 5f;
+        float BASE_MICRO = 40f, PER_MICRO_KM = 10f;
+        float BASE_SEDAN = 60f, PER_SEDAN_KM = 20f;
+        float SURGE_RATE = 1.3f;
+
+        // init to base default
+        float total_auto = BASE_AUTO,
+                total_micro = BASE_MICRO,
+                total_sedan = BASE_SEDAN;
+
+        float distance = calcDistance();
+
+        if(distance > 1f) {
+            // add base + (remaining dist * perKM price)
+            total_auto += (distance - 1) * PER_AUTO_KM;
+            total_micro += (distance - 1) * PER_MICRO_KM;
+            total_sedan += (distance - 1) * PER_SEDAN_KM;
+        }
+
+        if(isSurgeTime()) {
+            // 30% bonus
+            total_auto *= SURGE_RATE;
+            total_micro *= SURGE_RATE;
+            total_sedan *= SURGE_RATE;
+        }
+
+        // here we have actual total price .2f format
+        DecimalFormat df = new DecimalFormat();
+        df.setMaximumFractionDigits(2);
+        mPrices[0] = Float.parseFloat(df.format(total_auto));
+        mPrices[1] = Float.parseFloat(df.format(total_micro));
+        mPrices[2] = Float.parseFloat(df.format(total_sedan));
+
     }
 
     private float calcDistance() {
-        // TODO somehow calculate distance and return float of that
-        return 3.3f;
+        LatLng l1 = new LatLng(place1.getPosition().latitude, place1.getPosition().longitude);
+        LatLng l2 = new LatLng(place2.getPosition().latitude, place2.getPosition().longitude);
+
+
+        float distance = (float) SphericalUtil.computeDistanceBetween(l1, l2) / 1000;
+        Log.d(TAG, "calcDistance: " + distance);
+        // in KMs
+        return distance;
     }
 
     private void getLastLocation() {
@@ -361,16 +381,15 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 // DONE 1) logout out of the app
                 // DONE 2) [optional] delete stored shared pref variables for new login info -- DONE
                 Intent logoutintent = new Intent(this, MainActivity.class);
-                startActivity(logoutintent);
-
                 SharedPreferences sharedPreferences;
                 sharedPreferences = getSharedPreferences("AuthPrefs", MODE_PRIVATE);
                 SharedPreferences.Editor editor = sharedPreferences.edit();
                 editor.putString("email", "");
                 editor.putString("password","");
                 editor.apply();
+                Toast.makeText(this, "Logging out", Toast.LENGTH_SHORT).show();
+                startActivity(logoutintent);
                 finish();
-                Toast.makeText(this, "Logout selected", Toast.LENGTH_SHORT).show();
                 return true;
 
             default:
@@ -391,6 +410,34 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         String output = "json";
         // Building the url to the web service
         return "https://maps.googleapis.com/maps/api/directions/" + output + "?" + parameters + "&key=" + Constants.GOOGLE_MAPS_API_KEY;
+    }
+
+    private boolean isSurgeTime() {
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH");
+            LocalDateTime now = LocalDateTime.now();
+            Log.d(TAG, "isSurgeTime: " + formatter.format(now));
+
+            String t = null;
+
+            t = formatter.format(now);
+
+            // 8 to 11
+            if (t.equals("8") || t.equals("9") || t.equals("10") || t.equals("11")) {
+                return true;
+            }
+
+            // 5 to 8
+            if (t.equals("17") || t.equals("18") || t.equals("19") || t.equals("20")) {
+                return true;
+            }
+
+            // no surge :(
+            return false;
+        }
+
+        return false;
     }
 
 
