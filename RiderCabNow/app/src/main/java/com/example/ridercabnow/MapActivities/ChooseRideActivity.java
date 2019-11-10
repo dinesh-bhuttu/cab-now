@@ -263,21 +263,26 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         rid = databaseReference.push().getKey();
         if(rid != null) {
             databaseReference.child(rid).setValue(ride);
-            // TODO Listen to change in driverId in Rides branch
             DatabaseReference rideRef = FirebaseDatabase.getInstance().getReference("Rides")
-                    .child(rid);
+                    .child(rid).child("driver");
 
             rideRef.addValueEventListener(new ValueEventListener() {
                 @Override
                 public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                     Log.d(TAG, "onDataChange: snapshot -> " + dataSnapshot.getValue());
-                    dataSnapshot.getValue(Ride.class);
 
-                    Ride checkDriver = new Ride();
-                    String driverId = checkDriver.getDriver();
-                    if(driverId != null) {
-                        // Found driver -> change to new activity with markers and driver data
-                        Log.d(TAG, "onDataChange: driverId -> " + driverId);
+                    String driverId = (String) dataSnapshot.getValue();
+
+                    if(driverId != null && driverId.equals("")) {
+                        // still not accepted here
+                        Toast.makeText(ChooseRideActivity.this, "Waiting for drivers ...", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Log.d(TAG, "onDataChange: driverId ->> " + driverId);
+
+                        // change Ride status value
+                        databaseReference.child(rid).child("status").setValue("Accepted");
+
                         // create intent values
                         String[] p1 = new String[] {
                                 String.valueOf(place1.getPosition().latitude),
@@ -288,10 +293,12 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                                 String.valueOf(place2.getPosition().longitude)
                         };
 
+                        alert.dismiss();
                         Intent intent = new Intent(getApplicationContext(), TravelActivity.class);
                         intent.putExtra("place1", p1);
                         intent.putExtra("place2", p2);
-                        alert.dismiss();
+                        intent.putExtra("rid", rid);
+                        intent.putExtra("dId", driverId);
                         startActivity(intent);
                     }
 
