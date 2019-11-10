@@ -1,6 +1,7 @@
 package com.example.ridercabnow.MapActivities;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -40,8 +41,11 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.maps.android.PolyUtil;
 import com.google.maps.android.SphericalUtil;
 
@@ -65,7 +69,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
     // Location
     private FusedLocationProviderClient mFusedLocationClient;
-    private static final float DEFAULT_ZOOM = 16f;
 
     // umano ListView params
     private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
@@ -73,6 +76,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
 
     // AlertDialog after selecting one of the ride types
+    AlertDialog alert;
     AlertDialog.Builder dialogBuilder;
 
     // Firebase
@@ -116,7 +120,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
         mMap.moveCamera(cu);
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.5f));
         mMap.setMyLocationEnabled(true);
 
     }
@@ -239,14 +242,14 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             case "micro": {
                 Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
             case "sedan": {
                 Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
             }
@@ -260,6 +263,45 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         rid = databaseReference.push().getKey();
         if(rid != null) {
             databaseReference.child(rid).setValue(ride);
+            // TODO Listen to change in driverId in Rides branch
+            DatabaseReference rideRef = FirebaseDatabase.getInstance().getReference("Rides")
+                    .child(rid);
+
+            rideRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.d(TAG, "onDataChange: snapshot -> " + dataSnapshot.getValue());
+                    dataSnapshot.getValue(Ride.class);
+
+                    Ride checkDriver = new Ride();
+                    String driverId = checkDriver.getDriver();
+                    if(driverId != null) {
+                        // Found driver -> change to new activity with markers and driver data
+                        Log.d(TAG, "onDataChange: driverId -> " + driverId);
+                        // create intent values
+                        String[] p1 = new String[] {
+                                String.valueOf(place1.getPosition().latitude),
+                                String.valueOf(place1.getPosition().longitude)
+                        };
+                        String[] p2 = new String[] {
+                                String.valueOf(place2.getPosition().latitude),
+                                String.valueOf(place2.getPosition().longitude)
+                        };
+
+                        Intent intent = new Intent(getApplicationContext(), TravelActivity.class);
+                        intent.putExtra("place1", p1);
+                        intent.putExtra("place2", p2);
+                        alert.dismiss();
+                        startActivity(intent);
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 
@@ -269,13 +311,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 .setTitle("Please wait")
                 .setMessage("Looking for rides ...")
                 .setCancelable(false)
-                .setNegativeButton("cancel", (dialogInterface, i) -> {
+                .setNegativeButton("cancel ride", (dialogInterface, i) -> {
                     databaseReference.child(rid).child("status").setValue("cancelled");
                     dialogInterface.dismiss();
                     Toast.makeText(ChooseRideActivity.this, "Ride cancelled", Toast.LENGTH_SHORT).show();
                 });
 
-        dialogBuilder.show();
+        alert = dialogBuilder.show();
     }
 
     private void calcPrice() {

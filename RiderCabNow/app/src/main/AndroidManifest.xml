@@ -28,7 +28,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".MapActivities.ChooseRideActivity"></activity>
+        <activity android:name=".RiderAuth.MainActivity"></activity>
+        <activity android:name=".MapActivities.ChooseRideActivity" />
         <activity android:name=".ProfileActivity" />
 
         <meta-data
@@ -38,7 +39,7 @@
             android:name="com.google.android.geo.API_KEY"
             android:value="@string/GOOGLE_MAPS_API_KEY" />
 
-        <activity android:name=".RiderAuth.MainActivity">
+        <activity android:name=".MapActivities.TravelActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
