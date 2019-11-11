@@ -78,6 +78,7 @@ import java.util.Arrays;
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class DriverWelcomeActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
@@ -169,6 +170,10 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
         checkRides();
     }
 
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
     private void checkRides(){
         rides.addValueEventListener(new ValueEventListener() {
             @Override
