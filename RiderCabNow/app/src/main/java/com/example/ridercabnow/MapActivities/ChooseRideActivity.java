@@ -154,7 +154,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
 
         // After Driver app completion integrate this
-        // TODO (1) When driver accepts
+        // DONE (1) When driver accepts
         //          -> change listView to show static emergency contact or sos and notifyAdapter
         //          -> show driver location and draw a PolyLine
 
@@ -234,7 +234,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         switch (type) {
             case "auto": {
                 Toast.makeText(this, "Booking an auto ...", Toast.LENGTH_SHORT).show();
-
+                Log.d(TAG,"SRGHFGHYJYHHYTHTH       " + payment);
                 ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "auto");
                 break;
@@ -250,6 +250,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
 
                 ride = new Ride(p1, p2, "Searching", price, distance, payment,
+
                         "", firebaseAuth.getUid(), "sedan");
                 break;
             }
@@ -262,6 +263,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // create global rid and use it to save ride object
         rid = databaseReference.push().getKey();
         if(rid != null) {
+            Log.d(TAG, "bookRide: ride object ->> " + ride.getPayment());
             databaseReference.child(rid).setValue(ride);
             DatabaseReference rideRef = FirebaseDatabase.getInstance().getReference("Rides")
                     .child(rid).child("driver");
@@ -279,9 +281,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                     }
                     else {
                         Log.d(TAG, "onDataChange: driverId ->> " + driverId);
-
-                        // change Ride status value
-                        databaseReference.child(rid).child("status").setValue("Accepted");
 
                         // create intent values
                         String[] p1 = new String[] {
@@ -358,6 +357,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             total_sedan *= SURGE_RATE;
         }
 
+        Log.d(TAG, "calcPrice: prices : " + total_auto + " " + total_micro + " " + total_sedan);
         // here we have actual total price .2f format
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);

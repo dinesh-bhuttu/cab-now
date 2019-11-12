@@ -5,6 +5,7 @@
     <string name="text_location_permission">Please give CabNow access to your location to proceed</string>
     <string name="ok">Allow</string>
     <string name="notok">Deny</string>
+
     <string-array name="payments">
         <item>UPI</item>
         <item>Cash</item>

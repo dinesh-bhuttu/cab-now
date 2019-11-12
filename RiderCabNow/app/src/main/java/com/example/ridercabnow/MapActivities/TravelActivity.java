@@ -3,15 +3,18 @@ package com.example.ridercabnow.MapActivities;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.cardview.widget.CardView;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.location.Location;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -33,19 +36,17 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.OnMapReadyCallback;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class TravelActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
+public class TravelActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback, View.OnClickListener {
 
     private static final String TAG = "TravelActivity";
     private MarkerOptions place1, place2;
@@ -63,8 +64,10 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
     String driverId = "";
 
     // widgets
-    TextView rideType, rating, driverName, vehicleNo;
+    TextView rideType, rating, driverName, vehicleNo, lastFour, ridePrice, enjoyRide;
     Button btnCancelRide;
+    CardView callDriver;
+    String driverPhone = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +78,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
 
         // Get toolbar
         Toolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setTitle("Directions");
+        toolbar.setTitle("Ride Info");
         setSupportActionBar(toolbar);
 
         // init map
@@ -85,7 +88,27 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         // fill out driver details section & get driver location in global vars
         fillDriverDetails();
 
-        // TODO listen to status change for "Arrived"
+        DatabaseReference activeRef = FirebaseDatabase.getInstance()
+                .getReference("Rides").child(rid).child("status");
+        activeRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                // check when status becomes Active
+                String active = (String) dataSnapshot.getValue();
+                Log.d(TAG, "onDataChange: status reference -> " + dataSnapshot.getValue());
+                if(active != null && active.equalsIgnoreCase("active")) {
+                    // ride is active here, display enjoy message and remove cancel button
+                    btnCancelRide.setVisibility(View.GONE);
+                    enjoyRide.setVisibility(View.VISIBLE);
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+        
 
     }
 
@@ -123,6 +146,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         }
 
     }
+
 
     private void drawPolyLineToDriver() {
         // Get directions to driver
@@ -242,11 +266,8 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
 
 
     private void fillDriverDetails() {
-        rideType = findViewById(R.id.tvRideType);
-        rating = findViewById(R.id.tvRating);
-        driverName = findViewById(R.id.tvDriverName);
-        vehicleNo = findViewById(R.id.tvVehicleNo);
-        btnCancelRide = findViewById(R.id.btnCancelRide);
+
+        initWidgets();
 
         DatabaseReference driverRef = FirebaseDatabase.getInstance()
                 .getReference("Drivers")
@@ -254,7 +275,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         driverRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.d(TAG, "onDataChange: snapshot ->> " + dataSnapshot.getValue());
+                Log.d(TAG, "onDataChange: driverId reference ->> " + dataSnapshot.getValue());
 
                 Driver driver = dataSnapshot.getValue(Driver.class);
                 if(driver != null) {
@@ -262,16 +283,39 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
                             driver.getDriver_name() + " has accepted", Toast.LENGTH_LONG).show();
 
                     // driver details
+                    driverPhone = driver.getDriver_phone();
                     rideType.setText(driver.getCab_type());
                     rating.setText(String.valueOf(driver.getAverage_rating()));
                     driverName.setText(driver.getDriver_name());
-                    vehicleNo.setText(driver.getVehicle_no());
+                    // get vehicle number after splitting
+                    String[] p = getVechicleNo(driver.getVehicle_no());
+                    vehicleNo.setText(p[0]);
+                    lastFour.setText(p[1]);
 
                     // driver global location vars
                     Latlng l = driver.getSource();
                     driverLat = Double.parseDouble(l.getLat());
                     driverLng = Double.parseDouble(l.getLng());
                     Log.d(TAG, "onDataChange: Driver values ->> " + driverLat + " " + driverLng);
+
+                    // single value event for price in ride
+                    DatabaseReference rideRef = FirebaseDatabase.getInstance()
+                            .getReference("Rides").child(rid);
+                    rideRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                        @Override
+                        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                            // grab price
+                            Ride ride = dataSnapshot.getValue(Ride.class);
+                            if(ride != null) {
+                                ridePrice.setText(ride.getPrice());
+                            }
+                        }
+
+                        @Override
+                        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                        }
+                    });
                 }
             }
 
@@ -282,5 +326,45 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
                         Toast.LENGTH_LONG).show();
             }
         });
+    }
+
+
+    private void initWidgets() {
+        rideType = findViewById(R.id.tvRideType);
+        ridePrice = findViewById(R.id.tvPrice);
+        rating = findViewById(R.id.tvRating);
+        driverName = findViewById(R.id.tvDriverName);
+        vehicleNo = findViewById(R.id.tvVehicleNo);
+        lastFour = findViewById(R.id.tvLastFour);
+        enjoyRide = findViewById(R.id.tvEnjoyRide);
+        btnCancelRide = findViewById(R.id.btnCancelRide);
+        callDriver = findViewById(R.id.ivCallDriver);
+        callDriver.setOnClickListener(this);
+    }
+
+    private String[] getVechicleNo(String vehicleNo) {
+        int n = vehicleNo.length();
+        String[] p = new String[] {vehicleNo.substring(0, n-4),
+                vehicleNo.substring(n-4, n)};
+
+        Log.d(TAG, "getVechicleNo: vehicle -> " + p[0] + " " + p[1]);
+        return p;
+    }
+
+
+    @Override
+    public void onClick(View view) {
+        if(view.getId() == R.id.ivCallDriver) {
+            // call driver here
+            Toast.makeText(this, "Calling driver", Toast.LENGTH_SHORT).show();
+            Intent callIntent = new Intent(Intent.ACTION_DIAL);
+            callIntent.setData(Uri.fromParts("tel", "+91" + driverPhone, null));
+            startActivity(callIntent);
+        }
+    }
+
+    @Override
+    public void onBackPressed() {
+        Toast.makeText(this, "Back button is disabled", Toast.LENGTH_SHORT).show();
     }
 }
