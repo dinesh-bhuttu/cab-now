@@ -38,6 +38,7 @@ import com.example.drivercabnow.Models.Ride;
 import com.example.drivercabnow.R;
 import com.example.drivercabnow.MainActivity;
 import com.example.drivercabnow.Models.Driver;
+import com.example.drivercabnow.RecycleActivity;
 import com.example.drivercabnow.SplashActivity;
 import com.example.drivercabnow.Utils.Constants;
 import com.google.android.gms.common.api.Status;
@@ -78,6 +79,7 @@ import java.util.Arrays;
 import de.hdodenhof.circleimageview.CircleImageView;
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
+import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
 
 public class DriverWelcomeActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
 
@@ -142,6 +144,12 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
     }
 
     @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        // Inflate the menu; this adds items to the action bar if it is present.
+        getMenuInflater().inflate(R.menu.menu_options_driver, menu);
+        return true;
+    }
+    @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         // Before setContentView
@@ -153,6 +161,11 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
 
         checkLocationPermission();
         Log.d(TAG, "onCreate: Started");
+
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setTitle("Directions");
+        setSupportActionBar(toolbar);
 
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
@@ -169,6 +182,10 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
         checkRides();
     }
 
+    @Override
+    protected void attachBaseContext(Context newBase) {
+        super.attachBaseContext(CalligraphyContextWrapper.wrap(newBase));
+    }
     private void checkRides(){
         rides.addValueEventListener(new ValueEventListener() {
             @Override
@@ -176,20 +193,15 @@ public class DriverWelcomeActivity extends AppCompatActivity implements OnMapRea
                 Log.e("Driver Count " ,"" + dataSnapshot.getChildrenCount());
                 for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
                     Ride ride = dataSnapshot1.getValue(Ride.class);
-                    Log.d(TAG, ride.getStatus());
-                    Log.d(TAG, "Ride type : "+ride.getVehicle());
-                    Log.d(TAG, "My type : " +MainActivity.text);
+                    assert ride != null;
                     if(ride.getStatus().equalsIgnoreCase("Searching") && ride.getVehicle().equalsIgnoreCase("Auto")) {
-                        if(count>=0) {
+                        if(count==0) {
                             count=1;
                             // TODO - Display splash screen and listview - with user, source and destination details
                             Log.d(TAG, "Starting splashactivity");
                             startActivity(new Intent(DriverWelcomeActivity.this, SplashActivity.class));
                         }
                     }
-                    else
-                        continue;
-
                 }
             }
 

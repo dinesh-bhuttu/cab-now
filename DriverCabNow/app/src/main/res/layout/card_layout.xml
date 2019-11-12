@@ -4,24 +4,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     xmlns:tools="http://schemas.android.com/tools"
-    android:orientation="vertical"
-    android:background="#F5EBBD"
+    android:orientation="horizontal"
+    android:background="@color/driverSignin"
     android:tag="cards main container"
     tools:context=".RecycleActivity">
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardView"
         android:layout_width="match_parent"
-        android:layout_height="250dp"
+        android:layout_height="wrap_content"
         android:layout_margin="20dp"
         card_view:cardBackgroundColor="#FFFFFF"
-        card_view:cardCornerRadius="30dp"
-        card_view:cardElevation="10dp">
+        android:outlineSpotShadowColor="@color/driverSignin"
+        card_view:cardElevation="20dp">
 
         <RelativeLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_margin="20dp">
+            android:layout_margin="30dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -29,42 +29,82 @@
                 android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/customerName"
+                    android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Customer Name : "
+                    android:text="CUSTOMER NAME : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+                <TextView
+                    android:id="@+id/customerName"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:textColor="#000"
                     android:textSize="14dp"></TextView>
 
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PAYMENT TYPE :  "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
                 <TextView
                     android:id="@+id/paymentType"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Payment Type : "
                     android:textColor="#000"
                     android:textSize="14dp"></TextView>
 
                 <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="CUSTOMER SOURCE LOCATION :  "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
                     android:id="@+id/customerLocation"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Location : "
                     android:textColor="#000"
                     android:textSize="14dp"></TextView>
 
                 <TextView
-                    android:id="@+id/destination"
+                    android:layout_marginTop="10dp"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Destination : "
+                    android:text="CUSTOMER DESTINATION : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+                <TextView
+                    android:id="@+id/destination"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
                     android:textColor="#000"
                     android:textSize="14dp"></TextView>
 
                 <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="DISTANCE FROM SOURCE (kms) : "
+                    android:textColor="#000"
+                    android:textSize="14dp"></TextView>
+                <TextView
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
                     android:id="@+id/distance"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Source Distance : "
                     android:textColor="#000"
                     android:textSize="14dp"></TextView>
 
@@ -72,24 +112,29 @@
 
             <Button
                 android:id="@+id/acceptRide"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
+                android:layout_marginRight="8dp"
+                android:layout_weight="1"
+                android:text="ACCEPT"
+                android:textSize="12dp"
+                android:background="@drawable/btn_accept_background"
                 android:layout_alignParentBottom="true"
-                android:background="#6B37FF00"
-                android:text="Accept"
-                android:textColor="@android:color/black"
-                android:textSize="14dp"></Button>
+                android:textColor="@color/whiteColor"/>
 
             <Button
                 android:id="@+id/rejectRide"
-                android:layout_width="wrap_content"
+                android:layout_width="120dp"
                 android:layout_height="wrap_content"
+                android:layout_marginLeft="8dp"
+                android:layout_weight="1"
+                android:textSize="12dp"
                 android:layout_alignParentRight="true"
                 android:layout_alignParentBottom="true"
-                android:background="#6BFC0000"
-                android:text="Reject"
-                android:textColor="@android:color/black"
-                android:textSize="14dp"></Button>
+                android:text="REJECT"
+                android:background="@drawable/btn_reject_background"
+                android:textColor="@color/whiteColor"/>
+
         </RelativeLayout>
 
     </androidx.cardview.widget.CardView>

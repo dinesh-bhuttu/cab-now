@@ -1,25 +1,50 @@
 package com.example.drivercabnow.Adapters;
 
+import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.annotation.SuppressLint;
+import android.content.res.ColorStateList;
+import android.location.Address;
+import android.location.Geocoder;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
-
+import android.content.Context;
+import android.widget.Toast;
+import com.example.drivercabnow.MapActivities.DriverWelcomeActivity;
 import com.example.drivercabnow.Models.Ride;
 import com.example.drivercabnow.R;
+import com.example.drivercabnow.RecycleActivity;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder> {
 
+    private int i=0;
     private ArrayList<Ride> dataSet;
+    private String custName;
     private static final String TAG="CustomAdapter";
+    FirebaseAuth auth;
+    FirebaseDatabase db;
+    DatabaseReference users, rides, drivers;
+    String rider;
+    Context context;
+
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -28,6 +53,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
         public MyViewHolder(View itemView) {
             super(itemView);
+            this.acceptRide = itemView.findViewById(R.id.acceptRide);
             this.customerName =  itemView.findViewById(R.id.customerName);
             this.customerLocation =  itemView.findViewById(R.id.customerLocation);
             this.distance =  itemView.findViewById(R.id.distance);
@@ -40,40 +66,112 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         this.dataSet = data;
     }
 
+
     @Override
     public MyViewHolder onCreateViewHolder(ViewGroup parent,
                                            int viewType) {
-        CalligraphyConfig.initDefault(new CalligraphyConfig.Builder()
-                .setDefaultFontPath("fonts/arkhip_font.ttf")
-                .setFontAttrId(R.attr.fontPath)
-                .build());
+        auth = FirebaseAuth.getInstance();
+        db = FirebaseDatabase.getInstance();
+        users = db.getReference("Users");
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.card_layout, parent, false);
-
-        MyViewHolder myViewHolder = new MyViewHolder(view);
-        return myViewHolder;
+        context = view.getContext();
+        return new MyViewHolder(view);
     }
 
+    @SuppressLint("ResourceAsColor")
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int listPosition) {
+        rider = dataSet.get(listPosition).getRider();
+        users.child(rider).addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                int i = 0;
+                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                    i+=1;
+                    if(i==4) {
+                        custName = dataSnapshot1.getValue(String.class);
+                        holder.customerName.setText(custName);
+                        holder.customerName.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+                        Log.d(TAG,"Customer name issssssssssssssssssssssssssssssss "+custName);
+                    }
+                }
+            }
 
-        TextView customerName = holder.customerName;
-        TextView customerLocation = holder.customerLocation;
-        TextView paymentType = holder.paymentType;
-        TextView distance = holder.distance;
-        TextView destination = holder.destination;
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
-        customerName.setText("Rider - "+dataSet.get(listPosition).getRider());
-        destination.setText("Destination - "+dataSet.get(listPosition).getDestination().getLat()+","+dataSet.get(listPosition).getDestination().getLng());
-        customerLocation.setText("Location - "+dataSet.get(listPosition).getSource().getLat()+","+dataSet.get(listPosition).getSource().getLng());
-        paymentType.setText("Payment method - "+dataSet.get(listPosition).getPayment());
-        distance.setText("Distance - "+dataSet.get(listPosition).getDistance());
+            }
+        });
+        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+        String destloc=null;
+        String srcloc=null;
+        String destlat, destlng;
+        destlat = dataSet.get(listPosition).getDestination().getLat();
+        destlng = dataSet.get(listPosition).getDestination().getLng();
+        Log.d(TAG, destlat+","+destlng);
+        List<Address> list = null;
+        try {
+            list = geocoder.getFromLocation(Double.parseDouble(destlat), Double.parseDouble(destlng),1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (list != null && list.size() > 0) {
+            Address address = list.get(0);
+            destloc = address.getAddressLine(0);
+        }
+        Log.d(TAG, destloc);
 
-        Log.d(TAG, "Customer : "+customerName.getText());
-        Log.d(TAG, "Customer Location :"+customerLocation.getText());
-        Log.d(TAG, "Payment Type : "+ paymentType.getText());
-        Log.d(TAG, "Distance in kms :"+distance.getText());
-        Log.d(TAG, "Destination :"+destination.getText());    }
+        destlat = dataSet.get(listPosition).getSource().getLat();
+        destlng = dataSet.get(listPosition).getSource().getLng();
+        Log.d(TAG, destlat+","+destlng);
+        try {
+            list = geocoder.getFromLocation(Double.parseDouble(destlat), Double.parseDouble(destlng),1);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        if (list != null & list.size() > 0) {
+            Address address = list.get(0);
+            srcloc = address.getAddressLine(0);
+        }
+        Log.d(TAG, srcloc);
+        holder.destination.setText(destloc);
+        holder.destination.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+        holder.customerLocation.setText(srcloc);
+        holder.customerLocation.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+        holder.paymentType.setText(dataSet.get(listPosition).getPayment());
+        holder.paymentType.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+        holder.distance.setText(dataSet.get(listPosition).getDistance());
+        holder.distance.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+
+
+
+        // On click listeners for accept
+        holder.acceptRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rides = FirebaseDatabase.getInstance().getReference("Rides");
+                rides.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                            Ride ride = dataSnapshot1.getValue(Ride.class);
+                            Log.d(TAG, "MESSSSAAAGGGEEE - "+i);
+                            if(ride.getRider()==rider){
+                                rides.child(dataSnapshot1.getKey()).child("status").setValue("Accepted");
+                                rides.child(dataSnapshot1.getKey()).child("driver").setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
+    }
 
     @Override
     public int getItemCount() {

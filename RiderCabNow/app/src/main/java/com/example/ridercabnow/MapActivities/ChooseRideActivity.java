@@ -69,6 +69,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
     // Location
     private FusedLocationProviderClient mFusedLocationClient;
+    private static final float DEFAULT_ZOOM = 16f;
 
     // umano ListView params
     private String[] mRides = new String[] {"Auto", "Micro", "Sedan"};
@@ -76,8 +77,8 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
     private int[] mImages = new int[] {R.drawable.auto, R.drawable.micro, R.drawable.sedan};
 
     // AlertDialog after selecting one of the ride types
-    AlertDialog alert;
     AlertDialog.Builder dialogBuilder;
+    AlertDialog alert;
 
     // Firebase
     String rid = "";
@@ -120,6 +121,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
 
         mMap.moveCamera(cu);
+        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.5f));
         mMap.setMyLocationEnabled(true);
 
     }
@@ -242,7 +244,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             case "micro": {
                 Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "Searching", price, distance, payment,
+                ride = new Ride(p1, p2, "looking", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
@@ -250,7 +252,6 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
 
                 ride = new Ride(p1, p2, "Searching", price, distance, payment,
-
                         "", firebaseAuth.getUid(), "sedan");
                 break;
             }
@@ -317,13 +318,13 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                 .setTitle("Please wait")
                 .setMessage("Looking for rides ...")
                 .setCancelable(false)
-                .setNegativeButton("cancel ride", (dialogInterface, i) -> {
+                .setNegativeButton("cancel", (dialogInterface, i) -> {
                     databaseReference.child(rid).child("status").setValue("cancelled");
                     dialogInterface.dismiss();
                     Toast.makeText(ChooseRideActivity.this, "Ride cancelled", Toast.LENGTH_SHORT).show();
                 });
 
-        alert = dialogBuilder.show();
+        dialogBuilder.show();
     }
 
     private void calcPrice() {
