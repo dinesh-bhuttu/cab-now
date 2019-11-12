@@ -14,10 +14,11 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.TextView;
 import android.content.Context;
-
+import android.widget.Toast;
 import com.example.drivercabnow.MapActivities.DriverWelcomeActivity;
 import com.example.drivercabnow.Models.Ride;
 import com.example.drivercabnow.R;
+import com.example.drivercabnow.RecycleActivity;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -34,6 +35,7 @@ import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 
 public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHolder> {
 
+    private int i=0;
     private ArrayList<Ride> dataSet;
     private String custName;
     private static final String TAG="CustomAdapter";
@@ -51,6 +53,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
 
         public MyViewHolder(View itemView) {
             super(itemView);
+            this.acceptRide = itemView.findViewById(R.id.acceptRide);
             this.customerName =  itemView.findViewById(R.id.customerName);
             this.customerLocation =  itemView.findViewById(R.id.customerLocation);
             this.distance =  itemView.findViewById(R.id.distance);
@@ -113,7 +116,7 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (list != null & list.size() > 0) {
+        if (list != null && list.size() > 0) {
             Address address = list.get(0);
             destloc = address.getAddressLine(0);
         }
@@ -140,6 +143,34 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         holder.paymentType.setTextColor(ColorStateList.valueOf(R.color.splashColor));
         holder.distance.setText(dataSet.get(listPosition).getDistance());
         holder.distance.setTextColor(ColorStateList.valueOf(R.color.splashColor));
+
+
+
+        // On click listeners for accept
+        holder.acceptRide.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                rides = FirebaseDatabase.getInstance().getReference("Rides");
+                rides.addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                        for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                            Ride ride = dataSnapshot1.getValue(Ride.class);
+                            Log.d(TAG, "MESSSSAAAGGGEEE - "+i);
+                            if(ride.getRider()==rider){
+                                rides.child(dataSnapshot1.getKey()).child("status").setValue("Accepted");
+                                rides.child(dataSnapshot1.getKey()).child("driver").setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                            }
+                        }
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                    }
+                });
+            }
+        });
     }
 
     @Override
