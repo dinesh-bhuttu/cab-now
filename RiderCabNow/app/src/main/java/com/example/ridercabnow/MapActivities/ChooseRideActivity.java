@@ -1,6 +1,7 @@
 package com.example.ridercabnow.MapActivities;
 
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -40,8 +41,11 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.maps.android.PolyUtil;
 import com.google.maps.android.SphericalUtil;
 
@@ -74,6 +78,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
     // AlertDialog after selecting one of the ride types
     AlertDialog.Builder dialogBuilder;
+    AlertDialog alert;
 
     // Firebase
     String rid = "";
@@ -151,7 +156,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
 
 
         // After Driver app completion integrate this
-        // TODO (1) When driver accepts
+        // DONE (1) When driver accepts
         //          -> change listView to show static emergency contact or sos and notifyAdapter
         //          -> show driver location and draw a PolyLine
 
@@ -231,7 +236,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         switch (type) {
             case "auto": {
                 Toast.makeText(this, "Booking an auto ...", Toast.LENGTH_SHORT).show();
-
+                Log.d(TAG,"SRGHFGHYJYHHYTHTH       " + payment);
                 ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "auto");
                 break;
@@ -246,7 +251,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             case "sedan": {
                 Toast.makeText(this, "Booking a sedan ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "sedan");
                 break;
             }
@@ -259,7 +264,51 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // create global rid and use it to save ride object
         rid = databaseReference.push().getKey();
         if(rid != null) {
+            Log.d(TAG, "bookRide: ride object ->> " + ride.getPayment());
             databaseReference.child(rid).setValue(ride);
+            DatabaseReference rideRef = FirebaseDatabase.getInstance().getReference("Rides")
+                    .child(rid).child("driver");
+
+            rideRef.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.d(TAG, "onDataChange: snapshot -> " + dataSnapshot.getValue());
+
+                    String driverId = (String) dataSnapshot.getValue();
+
+                    if(driverId != null && driverId.equals("")) {
+                        // still not accepted here
+                        Toast.makeText(ChooseRideActivity.this, "Waiting for drivers ...", Toast.LENGTH_SHORT).show();
+                    }
+                    else {
+                        Log.d(TAG, "onDataChange: driverId ->> " + driverId);
+
+                        // create intent values
+                        String[] p1 = new String[] {
+                                String.valueOf(place1.getPosition().latitude),
+                                String.valueOf(place1.getPosition().longitude)
+                        };
+                        String[] p2 = new String[] {
+                                String.valueOf(place2.getPosition().latitude),
+                                String.valueOf(place2.getPosition().longitude)
+                        };
+
+                        alert.dismiss();
+                        Intent intent = new Intent(getApplicationContext(), TravelActivity.class);
+                        intent.putExtra("place1", p1);
+                        intent.putExtra("place2", p2);
+                        intent.putExtra("rid", rid);
+                        intent.putExtra("dId", driverId);
+                        startActivity(intent);
+                    }
+
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                }
+            });
         }
     }
 
@@ -309,6 +358,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             total_sedan *= SURGE_RATE;
         }
 
+        Log.d(TAG, "calcPrice: prices : " + total_auto + " " + total_micro + " " + total_sedan);
         // here we have actual total price .2f format
         DecimalFormat df = new DecimalFormat();
         df.setMaximumFractionDigits(2);

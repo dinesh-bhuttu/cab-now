@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -17,12 +18,12 @@ import com.example.ridercabnow.R;
 
 public class PaymentDialog extends DialogFragment {
 
-    private static String paymentSelected = null;
+    private static String paymentSelected = "UPI";
 
     @NonNull
     @Override
     public Dialog onCreateDialog(@Nullable Bundle savedInstanceState) {
-        String[] payments = getActivity().getResources().getStringArray(R.array.payments);
+        String[] payments = new String[] {"UPI", "Cash"};
         AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
         builder.setTitle("Payment method");
         builder.setSingleChoiceItems(R.array.payments, 0, new DialogInterface.OnClickListener() {
@@ -34,7 +35,9 @@ public class PaymentDialog extends DialogFragment {
 
         builder.setPositiveButton("OK", (dialogInterface, i) -> {
             // save payment method in ChooseRideActivity
+            // TODO bug here !!!
             ChooseRideActivity.payment = paymentSelected;
+            Toast.makeText(getContext(), "payment : " + ChooseRideActivity.payment, Toast.LENGTH_SHORT).show();
 
             // get p1 and p2 from WelcomeActivity and pass to ChooseRideActivity
             Intent i1 = new Intent(getActivity(), ChooseRideActivity.class);
@@ -44,7 +47,7 @@ public class PaymentDialog extends DialogFragment {
         });
 
         builder.setNegativeButton("Cancel", (dialogInterface, i) -> {
-            Toast.makeText(getActivity(), "Choose a payment method", Toast.LENGTH_LONG).show();
+            Toast.makeText(getActivity(), "Choose a payment method !", Toast.LENGTH_LONG).show();
         });
 
         return builder.create();

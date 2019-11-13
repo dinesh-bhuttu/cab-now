@@ -47,6 +47,7 @@
         </activity>
         <activity android:name=".RiderAuth.ResetPasswordActivity" />
         <activity android:name=".MapActivities.WelcomeActivity" />
+        <activity android:name=".MapActivities.TravelActivity" />
     </application>
 
 </manifest>

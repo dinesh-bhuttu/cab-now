@@ -1,0 +1,173 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".MapActivities.TravelActivity"
+    android:orientation="vertical">
+
+    <include layout="@layout/toolbar"
+        android:id="@+id/toolbar"/>
+
+    <fragment
+        android:id="@+id/mapNearBy"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="0.23"
+        android:background="#586879"
+        android:layout_margin="2dp"
+        android:layout_marginBottom="0dp">
+
+        <TextView
+            android:id="@+id/tvRideType"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Auto"
+            android:textSize="22sp"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="25dp"/>
+
+        <TextView
+            android:id="@+id/tvFare"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Fare \u20B9"
+            android:textSize="22sp"
+            android:textColor="#fff"
+            android:layout_toStartOf="@+id/tvPrice"
+            android:layout_marginTop="10dp" />
+
+        <TextView
+            android:id="@+id/tvPrice"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="45"
+            android:textSize="22sp"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            android:layout_alignParentEnd="true"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="15dp"/>
+
+        <ImageView
+            android:id="@+id/ivTaxi"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_local_taxi_24dp"
+            android:minWidth="36dp"
+            android:minHeight="36dp"
+            android:layout_below="@+id/tvRideType"
+            android:layout_marginTop="15dp"
+            android:layout_marginStart="10dp"/>
+
+        <TextView
+            android:id="@+id/tvVehicleNo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="KA01AB"
+            android:textSize="18sp"
+            android:textColor="#fff"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:layout_below="@+id/tvRideType"
+            android:layout_toEndOf="@+id/ivTaxi" />
+
+        <TextView
+            android:id="@+id/tvLastFour"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="1234"
+            android:textSize="24sp"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            android:layout_marginStart="15dp"
+            android:layout_below="@+id/tvVehicleNo"
+            android:layout_toEndOf="@+id/ivTaxi"
+            android:layout_marginTop="-3dp" />
+
+        <TextView
+            android:id="@+id/tvDriverName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ashwin Ashok"
+            android:textSize="22sp"
+            android:textColor="#fff"
+            android:layout_marginTop="7dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/tvRideType"
+            android:drawableEnd="@drawable/ic_person_black_24dp"
+            android:drawableTint="#fff"
+            android:drawablePadding="5dp"
+            android:layout_marginEnd="10dp" />
+
+        <androidx.cardview.widget.CardView
+            android:id="@+id/ivCallDriver"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_toStartOf="@+id/tvRating"
+            android:layout_below="@+id/tvDriverName"
+            android:layout_marginTop="3dp"
+            android:layout_marginEnd="15dp"
+            app:cardCornerRadius="30dp"
+            android:elevation="10dp"
+            android:clickable="true"
+            android:focusable="true">
+
+            <ImageView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:src="@drawable/ic_phone_green_30dp"
+                android:padding="3dp"
+                android:contentDescription="Call driver"/>
+
+        </androidx.cardview.widget.CardView>
+
+
+        <TextView
+            android:id="@+id/tvRating"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="4.8"
+            android:textSize="22sp"
+            android:textColor="#fff"
+            android:textStyle="bold"
+            android:layout_marginTop="4dp"
+            android:layout_alignParentEnd="true"
+            android:layout_below="@+id/tvDriverName"
+            android:drawableStart="@drawable/ic_star_gold_24dp"
+            android:drawablePadding="2dp"
+            android:layout_marginEnd="15dp"/>
+
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/btnCancelRide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#CC4B4B"
+        android:text="CANCEL RIDE"
+        android:textAlignment="center"
+        android:textColor="#fff" />
+
+    <TextView
+        android:id="@+id/tvEnjoyRide"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Enjoy your ride"
+        android:textSize="24sp"
+        android:textColor="#000"
+        android:textAlignment="center"
+        android:padding="10dp"
+        android:visibility="gone"/>
+
+</LinearLayout>
