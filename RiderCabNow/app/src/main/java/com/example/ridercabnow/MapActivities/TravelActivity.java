@@ -90,7 +90,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
 
         DatabaseReference activeRef = FirebaseDatabase.getInstance()
                 .getReference("Rides").child(rid).child("status");
-        activeRef.addValueEventListener(new ValueEventListener() {
+        activeRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // check when status becomes Active
@@ -122,13 +122,14 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         // 2 markers and saved polyline from previous activity
         mMap.addMarker(place1).setTitle("Pickup point");
         mMap.addMarker(place2).setTitle("Destination");
-        if(Constants.savedPolylineOptions != null) {
-            Log.d(TAG, "onMapReady: drawing saved polyline" + Constants.savedPolylineOptions);
-            mMap.addPolyline(Constants.savedPolylineOptions);
-        }
-        else {
-            drawPolyLine();
-        }
+
+//        if(Constants.savedPolylineOptions != null) {
+//            Log.d(TAG, "onMapReady: drawing saved polyline" + Constants.savedPolylineOptions);
+//            mMap.addPolyline(Constants.savedPolylineOptions);
+//        }
+//        else {
+//            drawPolyLine();
+//        }
 
         CameraUpdate c2 = CameraUpdateFactory.newLatLngZoom(new LatLng(driverLat, driverLng),
                 15.7f);
