@@ -163,9 +163,9 @@
         android:id="@+id/tvEnjoyRide"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Enjoy your ride"
-        android:textSize="24sp"
-        android:textColor="#000"
+        android:text="ENJOY YOUR RIDE"
+        android:textSize="20sp"
+        android:textColor="#fff"
         android:textAlignment="center"
         android:padding="10dp"
         android:visibility="gone"/>

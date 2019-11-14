@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <TextView
+        android:id="@+id/rupee"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="\u20b9"
+        android:textSize="32sp"
+        android:layout_toStartOf="@+id/alertPrice"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/alertPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="43"
+        android:textSize="32sp"
+        android:textColor="#000"
+        android:textStyle="bold"
+        android:layout_marginTop="20dp"/>
+
+    <TextView
+        android:id="@+id/alertDriverUPI"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_centerHorizontal="true"
+        android:text="something@somebank"
+        android:textSize="24sp"
+        android:textColor="#000"
+        android:layout_below="@+id/alertPrice"
+        android:layout_marginTop="20dp"/>
+
+    <RelativeLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/alertDriverUPI"
+        android:layout_marginTop="25dp"
+        android:padding="25dp"
+        android:layout_marginEnd="30dp"
+        android:layout_marginBottom="15dp">
+
+        <ImageView
+            android:id="@+id/gpayLogo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/gpay_logo"
+            android:contentDescription="Gpay logo"
+            android:layout_centerVertical="true"
+            android:paddingStart="-10dp"/>
+
+        <Button
+            android:id="@+id/btnPay"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="GPAY now"
+            android:textColor="#fff"
+            android:background="#000"
+            android:padding="16dp"
+            android:textSize="18sp"
+            android:backgroundTint="#346DF1"
+            android:drawableEnd="@drawable/ic_arrow_right_white_24dp"
+            android:drawableTint="#fff"
+            android:layout_toEndOf="@+id/gpayLogo"
+            android:layout_marginStart="10dp"/>
+
+    </RelativeLayout>
+
+
+</RelativeLayout>

@@ -1,21 +1,29 @@
 package com.example.ridercabnow.MapActivities;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.location.Location;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -25,6 +33,7 @@ import com.example.ridercabnow.RiderAuth.MainActivity;
 import com.example.ridercabnow.directionhelpers.FetchURL;
 import com.example.ridercabnow.directionhelpers.TaskLoadedCallback;
 import com.example.ridercabnow.models.Driver;
+import com.example.ridercabnow.models.HistoryItem;
 import com.example.ridercabnow.models.Latlng;
 import com.example.ridercabnow.models.Ride;
 import com.example.ridercabnow.utils.Constants;
@@ -39,14 +48,24 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class TravelActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback, View.OnClickListener {
+import org.w3c.dom.Text;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class TravelActivity extends AppCompatActivity
+        implements OnMapReadyCallback,
+        TaskLoadedCallback,
+        View.OnClickListener {
 
     private static final String TAG = "TravelActivity";
     private MarkerOptions place1, place2;
@@ -62,12 +81,20 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
     // Firebase
     String rid = "";
     String driverId = "";
+    String driverPhone = "";
+    String driverUPI = "";
+    String billPrice = "";
+    Float driverRating = 0f;
+
+    // UPI
+    AlertDialog paymentAlert;
+    final int UPI_PAYMENT = 0;
 
     // widgets
     TextView rideType, rating, driverName, vehicleNo, lastFour, ridePrice, enjoyRide;
     Button btnCancelRide;
     CardView callDriver;
-    String driverPhone = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,16 +117,87 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
 
         DatabaseReference activeRef = FirebaseDatabase.getInstance()
                 .getReference("Rides").child(rid).child("status");
-        activeRef.addListenerForSingleValueEvent(new ValueEventListener() {
+        activeRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 // check when status becomes Active
-                String active = (String) dataSnapshot.getValue();
+                String status = (String) dataSnapshot.getValue();
+
                 Log.d(TAG, "onDataChange: status reference -> " + dataSnapshot.getValue());
-                if(active != null && active.equalsIgnoreCase("active")) {
+                if(status != null && status.equalsIgnoreCase("active"))
+                {
                     // ride is active here, display enjoy message and remove cancel button
                     btnCancelRide.setVisibility(View.GONE);
                     enjoyRide.setVisibility(View.VISIBLE);
+                    enjoyRide.setBackgroundColor(Color.BLACK);
+
+                    // remove driver to user polyline and move to pickup
+                    mMap.clear();
+                    mMap.addMarker(place1).setTitle("Pickup point");
+                    mMap.addMarker(place2).setTitle("Destination");
+                    drawPolyLine();
+                    CameraUpdate moveToPickup = CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(place1.getPosition().latitude,
+                                    place1.getPosition().longitude),
+                            15.6f
+                    );
+                    mMap.moveCamera(moveToPickup);
+
+                    // draw line from source to dest
+                    if(Constants.savedPolylineOptions != null) {
+                        Log.d(TAG, "onMapReady: drawing saved polyline" + Constants.savedPolylineOptions);
+                        mMap.addPolyline(Constants.savedPolylineOptions);
+                    }
+                    else {
+                        drawPolyLine();
+                    }
+                }
+
+                else if(status != null && status.equalsIgnoreCase("arrived"))
+                {
+                    CameraUpdate cDest = CameraUpdateFactory.newLatLngZoom(
+                            new LatLng(place2.getPosition().latitude,
+                                    place2.getPosition().longitude),
+                            15.6f
+                    );
+                    mMap.moveCamera(cDest);
+                    Log.d(TAG, "onDataChange: Destination reached");
+                    if(ChooseRideActivity.payment.equalsIgnoreCase("upi"))
+                    {
+                        // Use PaymentUtil here
+                        Log.d(TAG, "onDataChange: Payment : " + ChooseRideActivity.payment);
+
+                        LayoutInflater inflater = TravelActivity.this.getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.alert_payment_layout, null);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(TravelActivity.this)
+                                .setTitle("Payment")
+                                .setView(dialogView)
+                                .setCancelable(false);
+
+                        Button gpay = dialogView.findViewById(R.id.btnPay);
+                        TextView price = dialogView.findViewById(R.id.alertPrice);
+                        TextView driverUpi = dialogView.findViewById(R.id.alertDriverUPI);
+                        price.setText(billPrice);
+                        driverUpi.setText(driverUPI);
+
+                        paymentAlert = builder.create();
+                        paymentAlert.show();
+
+                        gpay.setOnClickListener(view -> {
+
+                            payUsingUpi(billPrice, driverUPI,
+                                    driverName.getText().toString());
+
+                            paymentAlert.dismiss();
+                        });
+
+                    }
+                    else {
+                        Log.d(TAG, "onDataChange: Payment : " + ChooseRideActivity.payment);
+                        // TODO handle cash payment way
+
+                    }
                 }
             }
 
@@ -112,6 +210,145 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
 
     }
 
+    // GPAY helpers
+    void payUsingUpi(String amount, String upiId, String name) {
+
+        Uri uri = Uri.parse("upi://pay").buildUpon()
+                .appendQueryParameter("pa", upiId)
+                .appendQueryParameter("pn", name)
+                .appendQueryParameter("tn", "")
+                .appendQueryParameter("am", amount)
+                .appendQueryParameter("cu", "INR")
+                .build();
+
+
+        Intent upiPayIntent = new Intent(Intent.ACTION_VIEW);
+        upiPayIntent.setData(uri);
+
+        // will always show a dialog to user to choose an app
+        Intent chooser = Intent.createChooser(upiPayIntent, "Pay with");
+
+        // check if intent resolves
+        if(null != chooser.resolveActivity(getPackageManager())) {
+            startActivityForResult(chooser, UPI_PAYMENT);
+        } else {
+            Toast.makeText(TravelActivity.this,"No UPI app found, please install one to continue",Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == UPI_PAYMENT) {
+            if ((RESULT_OK == resultCode) || (resultCode == 11)) {
+                if (data != null) {
+                    String trxt = data.getStringExtra("response");
+                    Log.d("UPI", "onActivityResult: " + trxt);
+                    ArrayList<String> dataList = new ArrayList<>();
+                    dataList.add(trxt);
+                    upiPaymentDataOperation(dataList);
+                } else {
+                    Log.d("UPI", "onActivityResult: " + "Return data is null");
+                    ArrayList<String> dataList = new ArrayList<>();
+                    dataList.add("nothing");
+                    upiPaymentDataOperation(dataList);
+                }
+            } else {
+                Log.d("UPI", "onActivityResult: " + "Return data is null"); //when user simply back without payment
+                ArrayList<String> dataList = new ArrayList<>();
+                dataList.add("nothing");
+                upiPaymentDataOperation(dataList);
+            }
+        }
+    }
+
+    private void upiPaymentDataOperation(ArrayList<String> data) {
+        if (isConnectionAvailable(TravelActivity.this)) {
+            String str = data.get(0);
+            Log.d("UPIPAY", "upiPaymentDataOperation: "+str);
+            String paymentCancel = "";
+            if(str == null) str = "discard";
+            String status = "";
+            String approvalRefNo = "";
+            String[] response = str.split("&");
+            for (String s : response) {
+                String[] equalStr = s.split("=");
+                if (equalStr.length >= 2) {
+                    if (equalStr[0].toLowerCase().equals("Status".toLowerCase())) {
+                        status = equalStr[1].toLowerCase();
+                    } else if (equalStr[0].toLowerCase().equals("ApprovalRefNo".toLowerCase()) || equalStr[0].toLowerCase().equals("txnRef".toLowerCase())) {
+                        approvalRefNo = equalStr[1];
+                    }
+                } else {
+                    paymentCancel = "Payment cancelled by user.";
+                }
+            }
+
+            if (status.equals("success")) {
+                Toast.makeText(TravelActivity.this, "Transaction successful.", Toast.LENGTH_SHORT).show();
+                Log.d("UPI", "responseStr: "+approvalRefNo);
+
+                paymentAlert.dismiss();
+
+                LayoutInflater inflater = TravelActivity.this.getLayoutInflater();
+                View ratingView = inflater.inflate(R.layout.alert_rate_driver, null);
+
+                AlertDialog ratingDialog;
+                AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                        .setTitle("Rate your driver")
+                        .setCancelable(false)
+                        .setView(ratingView);
+
+                TextView ratingDriverName = ratingView.findViewById(R.id.driverName);
+                ratingDriverName.setText(driverName.getText().toString());
+                RatingBar ratingBar = ratingView.findViewById(R.id.ratingBar);
+                Button giveRating = ratingView.findViewById(R.id.giveRating);
+
+                ratingDialog = builder.create();
+                ratingDialog.show();
+
+                giveRating.setOnClickListener(view -> {
+                    float currentRating = ratingBar.getRating();
+                    if(currentRating > 0f) {
+                        ratingDialog.dismiss();
+                        rateDriver(currentRating);
+                    }
+                    else {
+                        Toast.makeText(this, "Please give a rating", Toast.LENGTH_SHORT).show();
+                    }
+                });
+
+
+            }
+            else if("Payment cancelled by user.".equals(paymentCancel)) {
+                Toast.makeText(TravelActivity.this, "Payment cancelled by user.", Toast.LENGTH_SHORT).show();
+                paymentAlert.show();
+            }
+            else {
+                Toast.makeText(TravelActivity.this, "Transaction failed.Please try again", Toast.LENGTH_SHORT).show();
+                paymentAlert.show();
+            }
+        }
+        else {
+            Toast.makeText(TravelActivity.this, "Internet connection is not available. Please check and try again", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public static boolean isConnectionAvailable(Context context) {
+        ConnectivityManager connectivityManager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager != null) {
+            NetworkInfo netInfo = connectivityManager.getActiveNetworkInfo();
+            return netInfo != null && netInfo.isConnected()
+                    && netInfo.isConnectedOrConnecting()
+                    && netInfo.isAvailable();
+        }
+        return false;
+    }
+    // GPAY helpers end
+
+
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
@@ -122,14 +359,6 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         // 2 markers and saved polyline from previous activity
         mMap.addMarker(place1).setTitle("Pickup point");
         mMap.addMarker(place2).setTitle("Destination");
-
-//        if(Constants.savedPolylineOptions != null) {
-//            Log.d(TAG, "onMapReady: drawing saved polyline" + Constants.savedPolylineOptions);
-//            mMap.addPolyline(Constants.savedPolylineOptions);
-//        }
-//        else {
-//            drawPolyLine();
-//        }
 
         CameraUpdate c2 = CameraUpdateFactory.newLatLngZoom(new LatLng(driverLat, driverLng),
                 15.7f);
@@ -255,6 +484,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         String[] p2 = i.getStringArrayExtra("place2");
         rid = i.getStringExtra("rid");
         driverId = i.getStringExtra("dId");
+        billPrice = i.getStringExtra("bill");
 
         LatLng l1 = new LatLng(Double.parseDouble(p1[0]), Double.parseDouble(p1[1]));
         LatLng l2 = new LatLng(Double.parseDouble(p2[0]), Double.parseDouble(p2[1]));
@@ -286,7 +516,8 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
                     // driver details
                     driverPhone = driver.getDriver_phone();
                     rideType.setText(driver.getCab_type());
-                    rating.setText(String.valueOf(driver.getAverage_rating()));
+                    driverRating = driver.getAverage_rating();
+                    rating.setText(String.valueOf(driverRating));
                     driverName.setText(driver.getDriver_name());
                     // get vehicle number after splitting
                     String[] p = getVechicleNo(driver.getVehicle_no());
@@ -294,6 +525,7 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
                     lastFour.setText(p[1]);
 
                     // driver global location vars
+                    driverUPI = driver.getUPI_Id();
                     Latlng l = driver.getSource();
                     driverLat = Double.parseDouble(l.getLat());
                     driverLng = Double.parseDouble(l.getLng());
@@ -329,6 +561,91 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
         });
     }
 
+    private void rateDriver(float rating) {
+
+        // TODO change avg formula somehow -> we need number of rides by driver
+        float avg = (rating + driverRating) / 2;
+
+        Task<Void> task = FirebaseDatabase.getInstance()
+                .getReference("Drivers")
+                .child(driverId)
+                .child("average_rating")
+                .setValue(avg);
+
+        task.addOnSuccessListener(aVoid -> {
+            Log.d(TAG, "rateDriver: TASK -> inside onSuccessListener");
+            if(task.isSuccessful()) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                        .setTitle("Ride completed")
+                        .setMessage("Thank you for using our services  - CabNow Inc.")
+                        .setCancelable(true)
+                        .setPositiveButton("OK", (dialogInterface, i) -> {
+                            dialogInterface.dismiss();
+
+                            // set status of ride to finished
+                            FirebaseDatabase.getInstance()
+                                    .getReference("Rides")
+                                    .child(rid)
+                                    .child("status")
+                                    .setValue("finished");
+
+                            addRideToUserHistory(rating);
+
+                        });
+
+                builder.create().show();
+            }
+        });
+    }
+
+    private void addRideToUserHistory(float ratingGiven) {
+
+        HistoryItem ride = new HistoryItem(
+                Float.parseFloat(ridePrice.getText().toString()),
+                new Latlng(String.valueOf(place2.getPosition().latitude),
+                        String.valueOf(place2.getPosition().longitude)),
+                driverName.getText().toString(),
+                ChooseRideActivity.payment,
+                ratingGiven,
+                rideType.getText().toString()
+        );
+
+        String uid = FirebaseAuth.getInstance().getUid();
+        if(uid != null)
+        {
+            // Task to add ride to user history list
+            Task<Void> task = FirebaseDatabase.getInstance()
+                    .getReference("Users")
+                    .child(uid)
+                    .child("history")
+                    .child(rid)
+                    .setValue(ride);
+
+            task.addOnSuccessListener(aVoid -> {
+                if(task.isSuccessful()) {
+                    Toast.makeText(TravelActivity.this,
+                            "Added this ride to your history",
+                            Toast.LENGTH_SHORT).show();
+
+                    // task to remove current rid from Rides
+                    Task<Void> task1 = FirebaseDatabase.getInstance()
+                            .getReference("Rides")
+                            .child(rid)
+                            .removeValue();
+
+                    task1.addOnSuccessListener(aVoid1 -> {
+                        if(task.isSuccessful()) {
+                            // clear map, finish() and move to WelcomeActivity
+                            mMap.clear();
+                            startActivity(new Intent(this, WelcomeActivity.class));
+                            finish();
+                        }
+                    });
+                }
+            });
+        }
+
+    }
 
     private void initWidgets() {
         rideType = findViewById(R.id.tvRideType);
@@ -368,4 +685,33 @@ public class TravelActivity extends AppCompatActivity implements OnMapReadyCallb
     public void onBackPressed() {
         Toast.makeText(this, "Back button is disabled", Toast.LENGTH_SHORT).show();
     }
+
+    // pulling History values
+//    String uid = FirebaseAuth.getInstance().getUid();
+//    List<HistoryItem> list = new ArrayList<>();
+//    if(uid != null) {
+//        Log.d(TAG, "onCreate: uid -> " + uid);
+//        DatabaseReference ref = FirebaseDatabase.getInstance()
+//                .getReference("Users")
+//                .child(uid)
+//                .child("history");
+//
+//        ref.addValueEventListener(new ValueEventListener() {
+//            @Override
+//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+//                Log.d(TAG, "onDataChange: Snapshot ->> " + dataSnapshot.getValue());
+//                for (DataSnapshot ds: dataSnapshot.getChildren()) {
+//                    HistoryItem item =  ds.getValue(HistoryItem.class);
+//                    list.add(item);
+//                }
+//                Log.d(TAG, "onDataChange: List -> " + list);
+//            }
+//
+//            @Override
+//            public void onCancelled(@NonNull DatabaseError databaseError) {
+//                Log.d(TAG, "onCancelled: ERROR : " + databaseError.getMessage());
+//            }
+//        });
+//    }
+
 }

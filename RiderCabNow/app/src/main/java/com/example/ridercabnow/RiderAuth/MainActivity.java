@@ -11,12 +11,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
+import android.widget.Toast;
 
+import com.example.ridercabnow.MapActivities.ChooseRideActivity;
+import com.example.ridercabnow.MapActivities.TravelActivity;
 import com.example.ridercabnow.MapActivities.WelcomeActivity;
 import com.example.ridercabnow.R;
+import com.example.ridercabnow.models.HistoryItem;
+import com.example.ridercabnow.models.Latlng;
 import com.example.ridercabnow.models.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -29,6 +35,10 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
 import uk.co.chrisjenx.calligraphy.CalligraphyContextWrapper;
@@ -63,19 +73,18 @@ public class MainActivity extends AppCompatActivity {
 
         setContentView(R.layout.activity_main);
 
-        // Grab Permissions
-
-
         // Init firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
         users = db.getReference("Users");
         drivers = db.getReference("Drivers");
 
+
         //Init view
         btnRegister = findViewById(R.id.btnRegister);
         btnSignin = findViewById(R.id.btnSignin);
         rootLayout = findViewById(R.id.rootLayout);
+
 
         btnRegister.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -46,16 +46,12 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.google.maps.android.PolyUtil;
 import com.google.maps.android.SphericalUtil;
 
-import java.sql.Date;
-import java.sql.Time;
+
 import java.text.DecimalFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
 
 
 public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyCallback, TaskLoadedCallback {
@@ -119,9 +115,8 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         int padding = (int) (width * 0.10); // offset from edges of the map 10% of screen
 
         CameraUpdate cu = CameraUpdateFactory.newLatLngBounds(bounds, width, height, padding);
-
         mMap.moveCamera(cu);
-        mMap.animateCamera(CameraUpdateFactory.zoomTo(15.5f));
+
         mMap.setMyLocationEnabled(true);
 
     }
@@ -154,14 +149,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
         // Gets source and dest MarkerOptions from previous activity
         getIntentInfo();
 
-
-        // After Driver app completion integrate this
-        // DONE (1) When driver accepts
-        //          -> change listView to show static emergency contact or sos and notifyAdapter
-        //          -> show driver location and draw a PolyLine
-
         // Post ride completion
-        // TODO (2) Make a button in listView to simulate ride completion for rider
         // TODO (3) Integrate payment and all that crap...
 
         // init firebase
@@ -244,7 +232,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
             case "micro": {
                 Toast.makeText(this, "Booking a micro ...", Toast.LENGTH_SHORT).show();
 
-                ride = new Ride(p1, p2, "looking", price, distance, payment,
+                ride = new Ride(p1, p2, "Searching", price, distance, payment,
                         "", firebaseAuth.getUid(), "micro");
                 break;
             }
@@ -293,12 +281,14 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                                 String.valueOf(place2.getPosition().longitude)
                         };
 
+                        Log.d(TAG, "onDataChange: alertDialog -> " + alert);
                         alert.dismiss();
                         Intent intent = new Intent(getApplicationContext(), TravelActivity.class);
                         intent.putExtra("place1", p1);
                         intent.putExtra("place2", p2);
                         intent.putExtra("rid", rid);
                         intent.putExtra("dId", driverId);
+                        intent.putExtra("bill", price);
                         startActivity(intent);
                     }
 
@@ -324,7 +314,7 @@ public class ChooseRideActivity extends AppCompatActivity implements OnMapReadyC
                     Toast.makeText(ChooseRideActivity.this, "Ride cancelled", Toast.LENGTH_SHORT).show();
                 });
 
-        dialogBuilder.show();
+        alert = dialogBuilder.show();
     }
 
     private void calcPrice() {
