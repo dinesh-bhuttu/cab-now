@@ -4,6 +4,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.ColorStateList;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,9 +17,13 @@ import android.widget.TextView;
 import android.content.Context;
 import android.widget.Toast;
 import com.example.drivercabnow.MapActivities.DriverWelcomeActivity;
+import com.example.drivercabnow.MapActivities.TravelActivity;
+import com.example.drivercabnow.Models.Latlng;
 import com.example.drivercabnow.Models.Ride;
+import com.example.drivercabnow.Models.User;
 import com.example.drivercabnow.R;
 import com.example.drivercabnow.RecycleActivity;
+import com.google.android.gms.maps.model.LatLng;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -27,6 +32,7 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -44,7 +50,10 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     DatabaseReference users, rides, drivers;
     String rider;
     Context context;
+    Latlng driverlatlng;
 
+    Double average_rating;
+    String rider_name, rider_phone, rider_email, vehicle;
 
     public static class MyViewHolder extends RecyclerView.ViewHolder {
 
@@ -62,8 +71,9 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         }
     }
 
-    public CustomAdapter(ArrayList<Ride> data) {
+    public CustomAdapter(Context context1, ArrayList<Ride> data) {
         this.dataSet = data;
+        this.context = context1;
     }
 
 
@@ -73,6 +83,27 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
         users = db.getReference("Users");
+        drivers = db.getReference("Drivers");
+        drivers.child(FirebaseAuth.getInstance().getUid()).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                if(dataSnapshot.exists()){
+                    for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+                        if(dataSnapshot1.getKey().equalsIgnoreCase("source")){
+                            driverlatlng = dataSnapshot1.getValue(Latlng.class);
+                        }
+                        else if(dataSnapshot1.getKey().equalsIgnoreCase("vehicle_no")){
+                            vehicle = dataSnapshot1.getValue(String.class);
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.card_layout, parent, false);
         context = view.getContext();
@@ -83,18 +114,37 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
     @Override
     public void onBindViewHolder(final MyViewHolder holder, final int listPosition) {
         rider = dataSet.get(listPosition).getRider();
-        users.child(rider).addValueEventListener(new ValueEventListener() {
+        users.child(rider).addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                int i = 0;
-                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
-                    i+=1;
-                    if(i==4) {
-                        custName = dataSnapshot1.getValue(String.class);
-                        holder.customerName.setText(custName);
-                        holder.customerName.setTextColor(ColorStateList.valueOf(R.color.splashColor));
-                        Log.d(TAG,"Customer name issssssssssssssssssssssssssssssss "+custName);
+                if(dataSnapshot.exists()) {
+                    for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()) {
+                        String key = dataSnapshot1.getKey();
+                        switch (key) {
+                            case "average_Rating":
+                                i+=1;
+                                Toast.makeText(context, "i is "+i, Toast.LENGTH_LONG);
+                                average_rating = dataSnapshot1.getValue(Double.class);
+                                break;
+                            case "rider_email":
+                                i+=1;
+                                Toast.makeText(context, "i is "+i, Toast.LENGTH_LONG);
+                                rider_email = dataSnapshot1.getValue(String.class);
+                                break;
+                            case "rider_name":
+                                i+=1;
+                                Toast.makeText(context, "i is "+i, Toast.LENGTH_LONG);
+                                rider_name = dataSnapshot1.getValue(String.class);
+                                break;
+                            case "rider_phone":
+                                i+=1;
+                                Toast.makeText(context, "i is "+i, Toast.LENGTH_LONG);
+                                rider_phone = dataSnapshot1.getValue(String.class);
+                                break;
+                        }
                     }
+                    holder.customerName.setText(rider_name);
+                    holder.customerName.setTextColor(ColorStateList.valueOf(R.color.splashColor));
                 }
             }
 
@@ -130,7 +180,8 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
         } catch (IOException e) {
             e.printStackTrace();
         }
-        if (list != null & list.size() > 0) {
+        assert list != null;
+        if (list.size() > 0) {
             Address address = list.get(0);
             srcloc = address.getAddressLine(0);
         }
@@ -156,10 +207,27 @@ public class CustomAdapter extends RecyclerView.Adapter<CustomAdapter.MyViewHold
                     public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                         for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
                             Ride ride = dataSnapshot1.getValue(Ride.class);
+                            Log.e(TAG, "KKKKEEEEYYYYY - " + dataSnapshot1.getKey());
                             Log.d(TAG, "MESSSSAAAGGGEEE - "+i);
-                            if(ride.getRider()==rider){
+                            assert ride != null;
+                            if(ride.getRider().equals(rider) && ride.getStatus().equalsIgnoreCase("Searching")){
                                 rides.child(dataSnapshot1.getKey()).child("status").setValue("Accepted");
                                 rides.child(dataSnapshot1.getKey()).child("driver").setValue(FirebaseAuth.getInstance().getCurrentUser().getUid());
+                                Intent n = new Intent(context, TravelActivity.class);
+                                n.putExtra("UserName",rider_name);
+                                n.putExtra("UserPhone", rider_phone);
+                                n.putExtra("UserRating", average_rating.toString());
+                                n.putExtra("StartLocationLat", ride.getSource().getLat());
+                                n.putExtra("StartLocationLng", ride.getSource().getLng());
+                                n.putExtra("EndLocationLat", ride.getDestination().getLat());
+                                n.putExtra("EndLocationLng", ride.getDestination().getLng());
+                                n.putExtra("Price", ride.getPrice());
+                                n.putExtra("DriverLocationLat",driverlatlng.getLat());
+                                n.putExtra("DriverLocationLng", driverlatlng.getLng());
+                                n.putExtra("Vehicle", vehicle);
+                                n.putExtra("RideId", dataSnapshot1.getKey());
+                                Toast.makeText(context, "PUT ALL EXTRAS", Toast.LENGTH_LONG);
+                                context.startActivity(n);
                             }
                         }
                     }

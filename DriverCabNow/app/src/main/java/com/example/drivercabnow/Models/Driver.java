@@ -17,7 +17,7 @@ package com.example.drivercabnow.Models;
 
 public class Driver {
     private String Driver_email, Driver_name, Driver_phone, UPI_Id, Vehicle_no, License_no, Cab_type, Cab_status;
-    private Integer Average_rating;
+    private Double Average_rating;
     private String Type="DRIVER";
     private Latlng source;
 
@@ -59,7 +59,7 @@ public class Driver {
         this.License_no = License_no;
         this.UPI_Id = UPI_Id;
         this.Cab_type = Cab_type;
-        this.Average_rating = 0;
+        this.Average_rating = 0.0;
         this.Cab_status = "Available";
         this.source = new Latlng("0","0"); // Finally current location will be a string like "0.0000 0.0000 0.0000 0.0000"
         // Split that, first two are latitude rest longitude
@@ -69,7 +69,7 @@ public class Driver {
     public String getCab_status() {
         return Cab_status;
     }
-    public Integer getAverage_rating() {
+    public Double getAverage_rating() {
         return Average_rating;
     }
     public String getCab_type() {
@@ -99,7 +99,7 @@ public class Driver {
     public void setCab_status(String cab_status) {
         Cab_status = cab_status;
     }
-    public void setAverage_rating(Integer average_rating) {
+    public void setAverage_rating(Double average_rating) {
         Average_rating = average_rating;
     }
     public void setCab_type(String cab_type) {

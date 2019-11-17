@@ -15,6 +15,12 @@
                 android:title="PROFILE"
                 app:showAsAction="ifRoom"/>
             <item
+                android:id="@+id/menuNotifications"
+                android:icon="@drawable/ic_notifications_none_24px"
+                android:title="NOTIFICATIONS"
+                app:showAsAction="ifRoom"/>
+
+            <item
                 android:id="@+id/menuHistory"
                 android:icon="@drawable/ic_history_black_24dp"
                 android:title="HISTORY"

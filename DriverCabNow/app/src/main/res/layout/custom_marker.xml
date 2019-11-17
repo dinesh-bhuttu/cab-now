@@ -31,7 +31,6 @@
             android:alpha="0.8"
             android:background="@android:color/transparent"
             android:gravity="center"
-            android:text="janet John"
             android:textColor="#000"
             android:textSize="10dp"
             android:visibility="visible" />
