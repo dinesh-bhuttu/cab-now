@@ -1,5 +1,7 @@
 package com.example.drivercabnow.Models;
 
+import android.util.Log;
+
 // FIREBASE DATABASE STRUCTURE
 //        "firebase_gen_rider_id":{
 //        "Rider_email":email,
@@ -26,18 +28,22 @@ public class User {
 
     // GETTERS
     public String getRider_email() {
+        Log.d("MAINACTIVITY", Rider_email);
         return Rider_email;
     }
     public String getRider_name() {
+        Log.d("MAINACTIVITY", Rider_name);
         return Rider_name;
     }
     public String getRider_phone() {
+        Log.d("MAINACTIVITY", Rider_phone);
         return Rider_phone;
     }
     public String getType() {
         return type;
     }
     public Double getAverage_Rating() {
+        Log.d("MAINACTIVITY", Average_Rating.toString());
         return Average_Rating;
     }
 

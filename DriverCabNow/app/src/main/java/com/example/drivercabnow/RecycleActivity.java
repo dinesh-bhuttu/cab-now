@@ -39,11 +39,18 @@ public class RecycleActivity extends AppCompatActivity {
     private static RecyclerView recyclerView;
     private static ArrayList<Ride> data;
 
+    Driver currentDriver;
     private ValueEventListener ridesValueListener;
     private static final String TAG = "RecycleActivity";
     FirebaseAuth auth;
     FirebaseDatabase db;
     DatabaseReference users, rides, drivers;
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,7 +77,26 @@ public class RecycleActivity extends AppCompatActivity {
         drivers = db.getReference("Drivers");
 
         data = new ArrayList<>();
-        adapter = new CustomAdapter(data);
+        adapter = new CustomAdapter(RecycleActivity.this, data);
+
+
+        String currentDriverID = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        drivers.child(currentDriverID) // Create a reference to the child node directly
+                .addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                        // This callback will fire even if the node doesn't exist, so now check for existence
+                        if (dataSnapshot.exists()) {
+                            currentDriver = dataSnapshot.getValue(Driver.class);
+                            //System.out.println("The node exists.");
+                        } else {
+                            //System.out.println("The node does not exist.");
+                        }
+                    }
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) { }
+                });
+
         getAllRideRequests(5);
         recyclerView.setAdapter(adapter);
     }
@@ -94,7 +120,7 @@ public class RecycleActivity extends AppCompatActivity {
                 data.clear();
                 for(DataSnapshot dataSnapshot1 : dataSnapshot.getChildren()){
                     Ride ride = dataSnapshot1.getValue(Ride.class);
-                    if(ride.getStatus().equalsIgnoreCase("Searching") && ride.getVehicle().equalsIgnoreCase("Auto")) {
+                    if(ride.getStatus().equalsIgnoreCase("Searching") && ride.getVehicle().equalsIgnoreCase(currentDriver.getCab_type())) {
                         src[0] = new LatLng(Double.parseDouble(ride.getSource().getLat()), Double.parseDouble(ride.getSource().getLng()));
                         Log.d(TAG, "Got rider - email:"+ride.getRider());
                         String riderReference = ride.getRider();

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="20dp">
+
+    <TextView
+        android:id="@+id/riderName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Rider name"
+        android:textSize="24sp"
+        android:textColor="#000"
+        android:drawableStart="@drawable/ic_person_pin_blue_24dp"
+        android:layout_centerHorizontal="true"
+        android:drawablePadding="5dp"
+        android:layout_marginTop="20dp"/>
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/riderName"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="20dp"
+        android:progressTint="#FFC800"
+        android:progressBackgroundTint="#CFCCCC"
+        android:rating="0"/>
+
+    <Button
+        android:id="@+id/giveRating"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Rate"
+        android:layout_below="@+id/ratingBar"
+        android:padding="18dp"
+        android:layout_margin="20dp"
+        android:textColor="#fff"
+        android:backgroundTint="#346DF1"/>
+
+</RelativeLayout>

@@ -62,7 +62,6 @@ public class MainActivity extends AppCompatActivity {
                 .setFontAttrId(R.attr.fontPath)
                 .build());
         setContentView(R.layout.activity_main);
-
         // Init firebase
         auth = FirebaseAuth.getInstance();
         db = FirebaseDatabase.getInstance();
@@ -305,6 +304,7 @@ public class MainActivity extends AppCompatActivity {
                                             // Write shared preferences
                                             writeSharedPrefs(edtEmail.getText().toString(),
                                                     edtPassword.getText().toString());
+                                            Log.e(TAG, "SSSTTTAAARRTTTIIINNNGGG MAINACTIVITY");
                                             startActivity(new Intent(MainActivity.this, DriverWelcomeActivity.class));
                                             finish();
                                         }
