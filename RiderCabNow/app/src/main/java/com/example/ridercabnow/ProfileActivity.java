@@ -22,7 +22,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-public class ProfileActivity extends AppCompatActivity implements View.OnClickListener {
+public class ProfileActivity extends AppCompatActivity {
 
     private static final String TAG = "ProfileActivity";
     TextView riderName, riderEmail, riderPhone;
@@ -83,11 +83,6 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
             }
         });
 
-        // update values here
-        riderName.setOnClickListener(this);
-        riderEmail.setOnClickListener(this);
-        riderPhone.setOnClickListener(this);
-
     }
 
     private void fillText(Profile p) {
@@ -110,10 +105,4 @@ public class ProfileActivity extends AppCompatActivity implements View.OnClickLi
         riderPhone = findViewById(R.id.tvRiderphone);
     }
 
-    @Override
-    public void onClick(View view) {
-        // TODO inflate one custom AlertDialog layout with EditText
-        // TODO handle all click events in a switch for [name, email, phone]
-
-    }
 }

@@ -10,7 +10,7 @@
     </style>
 
     <style name="MyDialogTheme" parent="Theme.AppCompat.Light.Dialog.Alert">
-    <item name="colorPrimary">#ffff00</item>
+        <item name="colorPrimary">#ffff00</item>
     </style>
 
 </resources>

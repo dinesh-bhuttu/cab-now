@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.cardview.widget.CardView;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -27,6 +26,7 @@ import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.ridercabnow.HistoryActivity;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.RiderAuth.MainActivity;
@@ -48,7 +48,6 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.database.DataSnapshot;
@@ -57,10 +56,8 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
-import org.w3c.dom.Text;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TravelActivity extends AppCompatActivity
         implements OnMapReadyCallback,
@@ -195,8 +192,33 @@ public class TravelActivity extends AppCompatActivity
                     }
                     else {
                         Log.d(TAG, "onDataChange: Payment : " + ChooseRideActivity.payment);
-                        // TODO handle cash payment way
 
+                        Log.d(TAG, "onDataChange: Payment : " + ChooseRideActivity.payment);
+
+                        // TODO change view
+                        LayoutInflater inflater = TravelActivity.this.getLayoutInflater();
+                        View dialogView = inflater.inflate(R.layout.alert_payment_layout, null);
+
+                        AlertDialog.Builder builder = new AlertDialog.Builder(TravelActivity.this)
+                                .setTitle("Payment - Cash")
+                                .setView(dialogView)
+                                .setCancelable(false);
+
+                        Button gpay = dialogView.findViewById(R.id.btnPay);
+                        TextView price = dialogView.findViewById(R.id.alertPrice);
+                        TextView driverUpi = dialogView.findViewById(R.id.alertDriverUPI);
+                        price.setText(billPrice);
+                        driverUpi.setText(driverUPI);
+
+                        paymentAlert = builder.create();
+                        paymentAlert.show();
+
+                        gpay.setOnClickListener(view -> {
+
+                            handleCash();
+
+                            paymentAlert.dismiss();
+                        });
                     }
                 }
             }
@@ -208,6 +230,36 @@ public class TravelActivity extends AppCompatActivity
         });
         
 
+    }
+
+    private void handleCash() {
+        LayoutInflater inflater = TravelActivity.this.getLayoutInflater();
+        View ratingView = inflater.inflate(R.layout.alert_rate_driver, null);
+
+        AlertDialog ratingDialog;
+        AlertDialog.Builder builder = new AlertDialog.Builder(this)
+                .setTitle("Rate your driver")
+                .setCancelable(false)
+                .setView(ratingView);
+
+        TextView ratingDriverName = ratingView.findViewById(R.id.driverName);
+        ratingDriverName.setText(driverName.getText().toString());
+        RatingBar ratingBar = ratingView.findViewById(R.id.ratingBar);
+        Button giveRating = ratingView.findViewById(R.id.giveRating);
+
+        ratingDialog = builder.create();
+        ratingDialog.show();
+
+        giveRating.setOnClickListener(view -> {
+            float currentRating = ratingBar.getRating();
+            if(currentRating > 0f) {
+                ratingDialog.dismiss();
+                rateDriver(currentRating);
+            }
+            else {
+                Toast.makeText(this, "Please give a rating", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     // GPAY helpers
@@ -433,8 +485,8 @@ public class TravelActivity extends AppCompatActivity
                 return true;
 
             case R.id.menuHistory:
-                // TODO show history activity out of app
-                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, HistoryActivity.class));
 
                 return true;
 
@@ -628,19 +680,25 @@ public class TravelActivity extends AppCompatActivity
                             Toast.LENGTH_SHORT).show();
 
                     // task to remove current rid from Rides
-                    Task<Void> task1 = FirebaseDatabase.getInstance()
-                            .getReference("Rides")
-                            .child(rid)
-                            .removeValue();
+//                    Task<Void> task1 = FirebaseDatabase.getInstance()
+//                            .getReference("Rides")
+//                            .child(rid)
+//                            .removeValue();
+//
+//                    task1.addOnSuccessListener(aVoid1 -> {
+//                        if(task.isSuccessful()) {
+//                            // clear map, finish() and move to WelcomeActivity
+//                            mMap.clear();
+//                            startActivity(new Intent(this, WelcomeActivity.class));
+//                            finish();
+//                        }
+//                    });
 
-                    task1.addOnSuccessListener(aVoid1 -> {
-                        if(task.isSuccessful()) {
-                            // clear map, finish() and move to WelcomeActivity
-                            mMap.clear();
-                            startActivity(new Intent(this, WelcomeActivity.class));
-                            finish();
-                        }
-                    });
+                    Intent intent = new Intent(this, WelcomeActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+
                 }
             });
         }
@@ -685,33 +743,5 @@ public class TravelActivity extends AppCompatActivity
     public void onBackPressed() {
         Toast.makeText(this, "Back button is disabled", Toast.LENGTH_SHORT).show();
     }
-
-    // pulling History values
-//    String uid = FirebaseAuth.getInstance().getUid();
-//    List<HistoryItem> list = new ArrayList<>();
-//    if(uid != null) {
-//        Log.d(TAG, "onCreate: uid -> " + uid);
-//        DatabaseReference ref = FirebaseDatabase.getInstance()
-//                .getReference("Users")
-//                .child(uid)
-//                .child("history");
-//
-//        ref.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-//                Log.d(TAG, "onDataChange: Snapshot ->> " + dataSnapshot.getValue());
-//                for (DataSnapshot ds: dataSnapshot.getChildren()) {
-//                    HistoryItem item =  ds.getValue(HistoryItem.class);
-//                    list.add(item);
-//                }
-//                Log.d(TAG, "onDataChange: List -> " + list);
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError databaseError) {
-//                Log.d(TAG, "onCancelled: ERROR : " + databaseError.getMessage());
-//            }
-//        });
-//    }
 
 }

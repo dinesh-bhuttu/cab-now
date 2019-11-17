@@ -11,18 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
 import android.widget.RelativeLayout;
-import android.widget.Toast;
 
-import com.example.ridercabnow.MapActivities.ChooseRideActivity;
-import com.example.ridercabnow.MapActivities.TravelActivity;
 import com.example.ridercabnow.MapActivities.WelcomeActivity;
 import com.example.ridercabnow.R;
-import com.example.ridercabnow.models.HistoryItem;
-import com.example.ridercabnow.models.Latlng;
 import com.example.ridercabnow.models.User;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
@@ -36,8 +30,8 @@ import com.rengwuxian.materialedittext.MaterialEditText;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.util.ArrayList;
-import java.util.List;
+
+import org.jetbrains.annotations.NotNull;
 
 import dmax.dialog.SpotsDialog;
 import uk.co.chrisjenx.calligraphy.CalligraphyConfig;
@@ -215,96 +209,111 @@ public class MainActivity extends AppCompatActivity {
         });
 
         //Set button for login
-        dialog.setPositiveButton("SIGN IN", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
+        dialog.setPositiveButton("SIGN IN", (dialog1, which) -> {
+            dialog1.dismiss();
 
-                //Set disable sign in if processing
-                btnSignin.setEnabled(true);
+            //Set disable sign in if processing
+            btnSignin.setEnabled(true);
 
-                String email = edtEmail.getText().toString();
-                // Check validation
-                if (TextUtils.isEmpty(email)) {
-                    Snackbar.make(rootLayout, "Please enter email address", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
+            String email = edtEmail.getText().toString();
+            // Check validation
+            if (TextUtils.isEmpty(email)) {
+                Snackbar.make(rootLayout, "Please enter email address", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
 
-                if (TextUtils.isEmpty(edtPassword.getText().toString())) {
-                    Snackbar.make(rootLayout, "Please enter password", Snackbar.LENGTH_SHORT).show();
-                    return;
-                }
-                if (edtPassword.getText().toString().length() < 8) {
-                    Snackbar.make(rootLayout, "Password Length must be 8 or more", Snackbar.LENGTH_SHORT);
-                    return;
-                }
+            if (TextUtils.isEmpty(edtPassword.getText().toString())) {
+                Snackbar.make(rootLayout, "Please enter password", Snackbar.LENGTH_SHORT).show();
+                return;
+            }
+            if (edtPassword.getText().toString().length() < 8) {
+                Snackbar.make(rootLayout, "Password Length must be 8 or more", Snackbar.LENGTH_SHORT);
+                return;
+            }
 
-                final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(MainActivity.this).build();
-                waitingDialog.setTitle("Loading...");
-                waitingDialog.show();
+            final AlertDialog waitingDialog = new SpotsDialog.Builder().setContext(MainActivity.this).build();
+            waitingDialog.setTitle("Loading...");
+            waitingDialog.show();
 
-
-
-                final String[] user_email = new String[1];
-                final int[] userFound = {0};
-                // Check if Driver or not
-                users.addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot snapshot) {
-                        Log.e("Count " ,""+snapshot.getChildrenCount());
-                        for (DataSnapshot postSnapshot: snapshot.getChildren()) {
-                            User user = postSnapshot.getValue(User.class);
-                            user_email[0] = user.getRider_email();
-                            if(user_email[0].equals(email)){
-                                userFound[0] =1;
-                                break;
-                            }
-                        }
-                        if(userFound[0]==0){
-                            waitingDialog.dismiss();
-                            Snackbar.make(rootLayout, "Email not registered as Rider :(",Snackbar.LENGTH_SHORT ).show();
-                        }
-                        else if(userFound[0]==1) {
-                            auth.signInWithEmailAndPassword(edtEmail.getText().toString(), edtPassword.getText().toString())
-                                    .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                        @Override
-                                        public void onSuccess(AuthResult authResult) {
-                                            waitingDialog.dismiss();
-
-                                            // Write shared prefs on successful login
-                                            writeSharedPrefs(edtEmail.getText().toString(),
-                                                    edtPassword.getText().toString());
-
-                                            startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
-                                            finish();
-                                        }
-                                    })
-                                    .addOnFailureListener(new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            waitingDialog.dismiss();
-                                            Snackbar.make(rootLayout, "Failed with message : " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
-
-                                            btnSignin.setEnabled(true);
-                                        }
-                                    });
+            // TODO refactor ... HOW to create new UserHist !
+            /* final String[] user_email = new String[1];
+            final int[] userFound = {0};
+            // Check if Driver or not
+            users.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NotNull DataSnapshot snapshot) {
+                    Log.e("Count " ,""+snapshot.getChildrenCount());
+                    for (DataSnapshot postSnapshot: snapshot.getChildren()) {
+                        Log.d(TAG, "onDataChange: snapshot ->> " + postSnapshot.getKey());
+                        User user = postSnapshot.getValue(User.class);
+                        Log.d(TAG, "onDataChange: user ->> " + user);
+                        user_email[0] = user.getRider_email();
+                        if(user_email[0].equals(email)){
+                            userFound[0] =1;
+                            break;
                         }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError databaseError) {
-                        Log.e("The read failed: " ,databaseError.getMessage());
+                    if(userFound[0]==0){
+                        waitingDialog.dismiss();
+                        Snackbar.make(rootLayout, "Email not registered as Rider :(",Snackbar.LENGTH_SHORT ).show();
                     }
-                });
-            }
+                    else if(userFound[0]==1) {
+                        auth.signInWithEmailAndPassword(edtEmail.getText().toString(), edtPassword.getText().toString())
+                                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                                    @Override
+                                    public void onSuccess(AuthResult authResult) {
+                                        waitingDialog.dismiss();
+
+                                        // Write shared prefs on successful login
+                                        writeSharedPrefs(edtEmail.getText().toString(),
+                                                edtPassword.getText().toString());
+
+                                        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+                                        finish();
+                                    }
+                                })
+                                .addOnFailureListener(new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        waitingDialog.dismiss();
+                                        Snackbar.make(rootLayout, "Failed with message : " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+                                        btnSignin.setEnabled(true);
+                                    }
+                                });
+                    }
+                }
+
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
+                    Log.e("The read failed: " ,databaseError.getMessage());
+                }
+            }); */
+
+            auth.signInWithEmailAndPassword(edtEmail.getText().toString(),
+                    edtPassword.getText().toString())
+                    .addOnSuccessListener(authResult -> {
+                        // Login pass
+                        waitingDialog.dismiss();
+
+                        // Write shared prefs on successful login
+                        writeSharedPrefs(edtEmail.getText().toString(),
+                                edtPassword.getText().toString());
+
+                        startActivity(new Intent(MainActivity.this, WelcomeActivity.class));
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        // Fail
+                        waitingDialog.dismiss();
+                        Snackbar.make(rootLayout, "Failed with message : " + e.getMessage(), Snackbar.LENGTH_SHORT).show();
+
+                        btnSignin.setEnabled(true);
+                    });
+
         });
 
-        dialog.setNegativeButton("CANCEL", new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int which) {
-                dialog.dismiss();
-            }
-        });
+        dialog.setNegativeButton("CANCEL", (dialog12, which) -> dialog12.dismiss());
 
         dialog.show();
 

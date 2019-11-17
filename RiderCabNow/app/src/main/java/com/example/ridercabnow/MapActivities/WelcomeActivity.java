@@ -35,6 +35,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 
+import com.example.ridercabnow.HistoryActivity;
 import com.example.ridercabnow.ProfileActivity;
 import com.example.ridercabnow.R;
 import com.example.ridercabnow.RiderAuth.MainActivity;
@@ -401,8 +402,8 @@ public class WelcomeActivity extends AppCompatActivity implements OnMapReadyCall
                 return true;
 
             case R.id.menuHistory:
-                // TODO show history activity out of app
-                Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(this, "History selected", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(this, HistoryActivity.class));
 
                 return true;
 
